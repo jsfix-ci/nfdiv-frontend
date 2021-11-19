@@ -83,11 +83,11 @@ Then('the page should include {string}', (text: string) => {
 });
 
 Then('I wait until the page contains {string}', (text: string) => {
-  I.waitForText(text, 5);
+  I.waitForText(text, 25);
 });
 
 Then('I wait until the page contains image {string}', (text: string) => {
-  I.waitForText(text, 10);
+  I.waitForText(text, 60);
 });
 
 Then('the page should not include {string}', (text: string) => {
@@ -169,7 +169,7 @@ Given('I delete any previously uploaded files', async () => {
   let i = 0;
   while (numberOfElements > 0 && i < maxRetries) {
     I.click('Delete');
-    I.wait(1);
+    I.wait(5);
     numberOfElements = await I.grabNumberOfVisibleElements(locator);
     i++;
   }
