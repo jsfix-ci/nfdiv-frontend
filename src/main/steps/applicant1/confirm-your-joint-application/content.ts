@@ -233,11 +233,10 @@ const cy: typeof en = ({ isDivorce, partner, userCase, isApplicant2, isJointAppl
       ? enConnectionBulletPointsSummarisedForAllUsers(userCase.connections, isDivorce, isJointApplication)
       : [],
   jurisdictionsMoreDetails: {
-    part1: `The courts of England or Wales must have the legal power (jurisdiction) to be able to ${
-      isDivorce ? 'grant a divorce' : 'end a civil partnership'
+    part1: `Rhaid bod gan llysoedd Cymru a Lloegr yr awdurdodaeth (y pŵer cyfreithiol) i allu ${
+      isDivorce ? 'caniatáu ysgariad' : 'dod â phartneriaeth sifil i ben'
     }.
-    The applicants confirmed that the legal statement(s) in the application apply to either or both the applicants.
-     Each legal statement includes some or all of the following legal connections to England or Wales.`,
+    Cadarnhaodd y ceiswyr bod y datganiad(au) cyfreithiol yn y cais yn berthnasol i naill ai un o’r ceiswyr neu’r ddau ohonynt. Mae pob datganiad cyfreithiol yn cynnwys rhai o’r cysylltiadau cyfreithiol canlynol â Chymru neu Loegr, neu bob un ohonynt.`,
     part2: jurisdictionMoreDetailsContent(userCase.connections, isDivorce, true).text,
   },
   whatThisMeans: 'What this means',
