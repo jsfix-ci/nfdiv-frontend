@@ -9,14 +9,18 @@
   <p class="govuk-body">{{ line2 }}</p>
   {% if isApplicant1FinancialOrderYes %}
     <p class="govuk-body">{{ applicant1FinancialOrderYes }}</p>
+    <p class="govuk-body">{{ financialOrderApplicant1 }}</p>
     {% endif %}
   {% if isApplicant2FinancialOrderYes %}
     <p class="govuk-body">{{ applicant2FinancialOrderYes }}</p>
+    <p class="govuk-body">{{ financialOrderApplicant2 }}</p>
   {% endif %}
 
   <dl>
     <dt class="govuk-heading-s">{{ caseReferenceHeading }}</dt>
     <dd class="govuk-body">{{ caseReferenceValue }}</dd>
+    <dt class="govuk-heading-s">{{ issuedDateHeading }}</dt>
+    <dd class="govuk-body">{{ issuedDateValue }}</dd>
     <dt class="govuk-heading-s">{{ line4 }}</dt>
     <dd class="govuk-body">{{ line5 }}</dd>
     <dt class="govuk-heading-s">{{ line6 }}</dt>
@@ -32,6 +36,9 @@
     {% if isCeremonyPlace %}
       <dt class="govuk-heading-s">{{ line11 }}</dt>
       <dd class="govuk-body">{{ line12 }}</dd>
+
+      <dt class="govuk-heading-s">{{ countryOfCeremonyHeading }}</dt>
+      <dd class="govuk-body">{{ countryOfCeremonyValue }}</dd>
     {% endif %}
     <dt class="govuk-heading-s">{{ line13 }}</dt>
     <dd class="govuk-body">{{ line14 }}</dd>
