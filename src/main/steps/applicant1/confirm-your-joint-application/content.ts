@@ -239,27 +239,27 @@ const cy: typeof en = ({ isDivorce, partner, userCase, isApplicant2, isJointAppl
     Cadarnhaodd y ceiswyr bod y datganiad(au) cyfreithiol yn y cais yn berthnasol i naill ai un o’r ceiswyr neu’r ddau ohonynt. Mae pob datganiad cyfreithiol yn cynnwys rhai o’r cysylltiadau cyfreithiol canlynol â Chymru neu Loegr, neu bob un ohonynt.`,
     part2: jurisdictionMoreDetailsContent(userCase.connections, isDivorce, true).text,
   },
-  whatThisMeans: 'What this means',
-  subHeading4: 'Other court cases',
-  line16: `The court needs to know about any other court cases relating to the ${
-    isDivorce ? 'marriage' : 'civil partnership'
-  }, which might affect the legal power (jurisdiction) of the court.`,
+  whatThisMeans: 'Beth mae hyn yn ei olygu',
+  subHeading4: 'Achosion llys eraill',
+  line16: `Mae’r llys angen gwybod am unrhyw achosion llys eraill sy’n ymwneud â’r ${
+    isDivorce ? 'briodas' : 'bartneriaeth sifil'
+  }, a all effeithio ar bŵer cyfreithiol (awdurdodaeth) y llys.`,
   line17: `${
     userCase.applicant1LegalProceedings === YesOrNo.YES && userCase.applicant2LegalProceedings === YesOrNo.YES
-      ? `Applicant 1 has given details of other court cases relating to the ${
-          isDivorce ? 'marriage' : 'civil partnership'
+      ? `Mae Ceisydd 1 wedi rhoi manylion am achosion llys eraill sy’n ymwneud â’r ${
+          isDivorce ? 'briodas' : 'bartneriaeth sifil'
         }:` +
         '<br>' +
         userCase.applicant1LegalProceedingsDetails +
         '<br><br>' +
-        `Applicant 2 has given details of other court cases relating to the ${
-          isDivorce ? 'marriage' : 'civil partnership'
+        `Mae Ceisydd 2 wedi rhoi manylion am achosion llys eraill sy’n ymwneud â’r ${
+          isDivorce ? 'briodas' : 'bartneriaeth sifil'
         }:` +
         '<br>' +
         userCase.applicant2LegalProceedingsDetails
       : userCase.applicant1LegalProceedings === YesOrNo.YES
       ? `Applicant 1 has given details of other court cases relating to the ${
-          isDivorce ? 'marriage' : 'civil partnership'
+          isDivorce ? 'briodas' : 'bartneriaeth sifil'
         }:` +
         '<br>' +
         userCase.applicant1LegalProceedingsDetails
