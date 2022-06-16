@@ -258,48 +258,50 @@ const cy: typeof en = ({ isDivorce, partner, userCase, isApplicant2, isJointAppl
         '<br>' +
         userCase.applicant2LegalProceedingsDetails
       : userCase.applicant1LegalProceedings === YesOrNo.YES
-      ? `Applicant 1 has given details of other court cases relating to the ${
+      ? `Mae Ceisydd 1 wedi rhoi manylion am achosion llys eraill sy’n ymwneud â’r ${
           isDivorce ? 'briodas' : 'bartneriaeth sifil'
         }:` +
         '<br>' +
         userCase.applicant1LegalProceedingsDetails
       : userCase.applicant2LegalProceedings === YesOrNo.YES
-      ? `Applicant 2 has given details of other court cases relating to the ${
-          isDivorce ? 'marriage' : 'civil partnership'
+      ? `Mae Ceisydd 2 wedi rhoi manylion am achosion llys eraill sy’n ymwneud â’r ${
+          isDivorce ? 'briodas' : 'bartneriaeth sifil'
         }:` +
         '<br>' +
         userCase.applicant2LegalProceedingsDetails
-      : `The applicants have indicated that there are no other court cases which are related to the ${
-          isDivorce ? 'marriage' : 'civil partnership'
+      : `Mae’r ceiswyr wedi nodi nad oes unrhyw achosion llys eraill sy’n ymwneud â’r ${
+          isDivorce ? 'briodas' : 'bartneriaeth sifil'
         }`
   }.`,
-  subHeading5: `Reason for  ${isDivorce ? 'the divorce' : 'ending the civil partnership'}`,
-  line18: `The ${isDivorce ? 'marriage' : 'relationship'} has broken down irretrievably (it cannot be saved).`,
-  subHeading6: 'Financial order application',
-  applicant1FinancialOrderYes: `Applicant 1 is applying to the court for financial orders for ${userCase.applicant1WhoIsFinancialOrderFor
+  subHeading5: `Rheswm dros ${isDivorce ? 'yr ysgariad' : 'ddod â’r bartneriaeth sifil i ben'}`,
+  line18: `Mae’r ${isDivorce ? 'briodas' : 'berthynas'} wedi chwalu’n gyfan gwbl (ni ellir ei hachub).`,
+  subHeading6: 'Cais am orchymyn ariannol',
+  applicant1FinancialOrderYes: `Mae Ceisydd 1 yn gwneud cais i’r llys am orchmynion ariannol ar gyfer ${userCase.applicant1WhoIsFinancialOrderFor
     ?.sort()
-    .join(' and ')
-    .replace(FinancialOrderFor.APPLICANT, 'themselves')
-    .replace(FinancialOrderFor.CHILDREN, 'the children')}.`,
-  applicant2FinancialOrderYes: `Applicant 2 is applying to the court for financial orders for ${userCase.applicant2WhoIsFinancialOrderFor
+    .join(' a’u ')
+    .replace(FinancialOrderFor.APPLICANT, 'nhw eu hunain')
+    .replace(FinancialOrderFor.CHILDREN, 'eu plant')}.`,
+  applicant2FinancialOrderYes: `Mae Ceisydd 2 yn gwneud cais i’r llys am orchmynion ariannol ar gyfer ${userCase.applicant2WhoIsFinancialOrderFor
     ?.sort()
-    .join(' and ')
-    .replace(FinancialOrderFor.APPLICANT, 'themselves')
-    .replace(FinancialOrderFor.CHILDREN, 'the children')}.`,
-  financialOrderNo: 'The applicants are not applying to the court for financial orders.',
-  financialOrderMoreDetails: `You and your ${partner} were asked if you want the court to decide how your money, property,
- pensions and other assets will be split. These decisions are called ‘financial orders’.
-  <br><br>A financial order can be made if you agree about dividing money and property, and you want to make the decision legally binding.
-   This is known as a ‘financial order by consent’. Or they can be made if you disagree about dividing money and property and want the court to decide.
-    This is known as a ‘contested financial order’.
-  <br><br>To formally start legal proceedings, the applicants will need to complete another form and pay a fee.
-   Applying for a ‘contested financial order’ costs ${getFee(
-     config.get('fees.financialOrder')
-   )}. Applying for a ‘financial order by consent’ costs ${getFee(
+    .join(' a’u ')
+    .replace(FinancialOrderFor.APPLICANT, 'nhw eu hunain')
+    .replace(FinancialOrderFor.CHILDREN, 'eu plant')}.`,
+  financialOrderNo: "Nid yw’r ceiswyr yn gwneud cais i'r llys am orchmynion ariannol.",
+  financialOrderMoreDetails: `Fe ofynnwyd i chi a’ch ${partner} os ydych eisiau i’r llys benderfynu sut y bydd
+    eich arian, eich eiddo, eich pensiynau a’ch asedau eaill yn cael eu rhannu.
+    Fe elwir y penderfyniadau hyn yn ‘gorchmynion ariannol’.
+  <br><br>Gellir gwneud gorchymyn ariannol os ydych yn cytuno ynghylch sut i rannu arian ac eiddo, ac os ydych eisiau gwneud
+    y penderfyniad yn rhwymol gyfreithiol. Fe elwir hyn yn ‘gorchymyn ariannol trwy gydsyniad’.
+    Neu gellir eu gwneud os ydych yn anghytuno ar sut i rannu arian ac eiddo ac rydych eisiau i’r llys benderfynu.
+    Gelwir hyn yn ‘gorchymyn ariannol sy’n cael ei wrthwynebu’.
+  <br><br>Bydd angen i’r ceiswyr lenwi ffurflen arall a thalu ffi i gychwyn achos cyfreithiol yn ffurfiol.
+    Mae gwneud cais am ‘gorchymyn ariannol sydd wedi’i wrthwynebu’ yn costio  ${getFee(
+      config.get('fees.financialOrder')
+    )}. Mae gwneud cais am ‘gorchymyn ariannol trwy gydsyniad’ yn costio ${getFee(
     config.get('fees.consentOrder')
-  )}. You can get a solicitor to draft these for you.
-  <br><br>If you are not sure what to do then you should seek legal advice. `,
-  subHeading7: "Applicant 1's correspondence address",
+  )}. Gallwch ofyn i gyfreithiwr ddrafftio y rhain ar eich rhan.
+  <br><br>Os nad ydych chi’n siŵr beth i’w wneud, dylech gael cyngor cyfreithiol. `,
+  subHeading7: 'Cyfeiriad gohebu ceisydd 1',
   applicantAddressCountry: `${
     userCase.applicant1SolicitorAddress ||
     [
@@ -314,9 +316,9 @@ const cy: typeof en = ({ isDivorce, partner, userCase, isApplicant2, isJointAppl
       .filter(Boolean)
       .join('<br>')
   }`,
-  subHeading8: "Applicant 1's email address",
+  subHeading8: 'Cyfeiriad e-bost ceisydd 1',
   line19: `${userCase.applicant1Email}`,
-  subHeading9: "Applicant 2's postal address",
+  subHeading9: 'Cyfeiriad post ceisydd 2',
   respondentAddressCountry: `${
     userCase.applicant2SolicitorAddress ||
     [
@@ -331,26 +333,26 @@ const cy: typeof en = ({ isDivorce, partner, userCase, isApplicant2, isJointAppl
       .filter(Boolean)
       .join('<br>')
   }`,
-  subHeading10: "Applicant 2's email address",
+  subHeading10: 'Cyfeiriad e-bost ceisydd 2',
   line20: `${userCase.applicant2Email}`,
-  confirm: `Confirm before  ${isSubmit(isApplicant2, userCase) ? 'submitting' : 'continuing'}`,
-  confirmPrayer: `I confirm that I’m applying to the court to ${
-    isDivorce ? 'dissolve my marriage (get a divorce)' : 'end my civil partnership'
+  confirm: `Cadarnhewch cyn ${isSubmit(isApplicant2, userCase) ? 'parhau' : 'cyflwyno'}`,
+  confirmPrayer: `Rwy’n cadarnhau fy mod yn gwneud cais i’r llys i ${
+    isDivorce ? 'ddiddymu fy mhriodas (cael ysgariad)' : 'ddod â fy mhartneriaeth sifil i ben'
   } ${
     userCase.applicant1ApplyForFinancialOrder === YesOrNo.YES ||
     userCase.applicant2ApplyForFinancialOrder === YesOrNo.YES
-      ? 'and make financial orders to decide how our money and property will be split.'
+      ? 'a gwneud gorchmynion ariannol i benderfynu sut i rannu ein harian a’n heiddo.'
       : ''
   }`,
-  confirmPrayerHint: 'This confirms what you are asking the court to do. It’s known as ‘the prayer’.',
-  confirmApplicationIsTrue: 'I believe that the facts stated in this application are true',
+  confirmPrayerHint: 'Mae hyn yn cadarnhau beth rydych yn gofyn i’r llys ei wneud. Gelwir hyn yn ‘y deisyfiad’.',
+  confirmApplicationIsTrue: 'Credaf fod y ffeithiau a nodir yn y cais hwn yn wir',
   confirmApplicationIsTrueHint:
-    'This confirms that the information you are submitting is true and accurate to the best of your knowledge. ' +
-    'It’s known as the ‘statement of truth’.',
-  continue: `${isSubmit(isApplicant2, userCase) ? 'Submit' : 'Continue to payment'}`,
+    'Mae hyn yn cadarnhau bod yr wybodaeth rydych yn ei chyflwyno yn wir ac yn gywir hyd at eithaf eich gwybodaeth. ' +
+    'Gelwir hwn yn ‘datganiad gwirionedd’.',
+  continue: `${isSubmit(isApplicant2, userCase) ? 'Cyflwyno' : 'Parhau i’r dudalen dalu'}`,
   confirmApplicationIsTrueWarning:
-    'Proceedings for contempt of court may be brought against anyone who makes, or causes to be made, a false statement ' +
-    'verified by a statement of truth without an honest belief in its truth.',
+    'Gellir dwyn achos dirmyg llys yn erbyn unrhyw un sy’n gwneud datganiad anwir, neu sy’n ' +
+    'achosi i ddatganiad anwir gael ei wneud mewn dogfen a ddilysir gan ddatganiad gwirionedd heb gredu’n onest ei fod yn wir.',
   errors: {
     applicant1IConfirmPrayer: {
       required: `You need to confirm you are applying to the court to  ${
