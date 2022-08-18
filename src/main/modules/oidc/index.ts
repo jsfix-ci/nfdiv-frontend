@@ -32,7 +32,9 @@ export class OidcMiddleware {
     const { errorHandler } = app.locals;
 
     app.get([SIGN_IN_URL, APPLICANT_2_SIGN_IN_URL], (req, res) =>
-      res.redirect(getRedirectUrl(`${protocol}${res.locals.host}${port}`, req.path))
+      res.redirect(
+        getRedirectUrl(`${protocol}${res.locals.host}${port}`, req.path, req.query['lng'] || req.session['lang'])
+      )
     );
     app.get(SIGN_OUT_URL, (req, res) => req.session.destroy(() => res.redirect('/')));
     app.get([CALLBACK_URL, APPLICANT_2_CALLBACK_URL], errorHandler(this.callbackHandler(protocol, port)));

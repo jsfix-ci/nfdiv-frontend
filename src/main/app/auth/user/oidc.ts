@@ -5,12 +5,12 @@ import jwt_decode from 'jwt-decode';
 import { APPLICANT_2_CALLBACK_URL, CALLBACK_URL, PageLink, SIGN_IN_URL } from '../../../steps/urls';
 import { UserDetails } from '../../controller/AppRequest';
 
-export const getRedirectUrl = (serviceUrl: string, requestPath: string): string => {
+export const getRedirectUrl = (serviceUrl: string, requestPath: string, language: string): string => {
   const id: string = config.get('services.idam.clientID');
   const loginUrl: string = config.get('services.idam.authorizationURL');
   const callbackUrl = encodeURI(serviceUrl + (requestPath === SIGN_IN_URL ? CALLBACK_URL : APPLICANT_2_CALLBACK_URL));
 
-  return `${loginUrl}?client_id=${id}&response_type=code&redirect_uri=${callbackUrl}`;
+  return `${loginUrl}?client_id=${id}&response_type=code&redirect_uri=${callbackUrl}&ui_locales=${language}`;
 };
 
 export const getUserDetails = async (
