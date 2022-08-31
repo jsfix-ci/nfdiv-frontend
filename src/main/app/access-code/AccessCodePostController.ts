@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { APPLICANT_2, HUB_PAGE, RESPONDENT, SIGN_OUT_URL, YOU_NEED_TO_REVIEW_YOUR_APPLICATION } from '../../steps/urls';
 import { getSystemUser } from '../auth/user/oidc';
 import { getCaseApi } from '../case/case-api';
-import { ApplicationType, SYSTEM_LINK_APPLICANT_2, SYSTEM_UNLINK_APPLICANT } from '../case/definition';
+import { ApplicationType, SYSTEM_LINK_APPLICANT_2 } from '../case/definition';
 import { AppRequest } from '../controller/AppRequest';
 import { AnyObject } from '../controller/PostController';
 import { Form, FormFields, FormFieldsFn } from '../form/Form';
@@ -69,7 +69,6 @@ export class AccessCodePostController {
         req.locals.logger.error(
           `Unlinking userId: "${req.session.user.id}" from existing application: ${req.session.existingCaseId}`
         );
-        await req.locals.api.triggerEvent(req.session.existingCaseId, {}, SYSTEM_UNLINK_APPLICANT);
       }
       req.session.existingCaseId = req.session.userCase.id;
       req.session.applicantChoosesNewInviteCase = undefined;
