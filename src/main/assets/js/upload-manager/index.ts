@@ -4,6 +4,7 @@ import FileInput from '@uppy/file-input';
 import ProgressBar from '@uppy/progress-bar';
 import XHRUpload from '@uppy/xhr-upload';
 
+import { SupportedLanguages } from '../../../modules/i18n';
 import { DOCUMENT_MANAGER } from '../../../steps/urls';
 import { getById, hidden, qs } from '../selectors';
 
@@ -18,13 +19,14 @@ const initUploadManager = (): void => {
   const url = DOCUMENT_MANAGER;
   const csrfToken = (getById('csrfToken') as HTMLInputElement)?.value;
   const csrfQuery = `?_csrf=${csrfToken}`;
+  const language = document.documentElement.lang;
   location.hash = '';
 
-  const chooseFilePhoto = 'Choose a file or take a photo';
+  const chooseFilePhoto = language === SupportedLanguages.Cy ? 'Dewiswch ffeil' : 'Choose a file';
 
   const uppy = new Uppy({
     restrictions: {
-      maxFileSize: 10485760,
+      maxFileSize: 26214400,
       maxNumberOfFiles: 5,
       allowedFileTypes: ['image/jpeg', 'image/tiff', 'image/png', 'application/pdf'],
     },
@@ -48,7 +50,12 @@ const initUploadManager = (): void => {
       target: '#uploadProgressBar',
       hideAfterFinish: true,
     })
-    .use(XHRUpload, { endpoint: `${url}${csrfQuery}`, bundle: true, headers: { accept: 'application/json' } })
+    .use(XHRUpload, {
+      endpoint: `${url}${csrfQuery}`,
+      bundle: true,
+      headers: { accept: 'application/json' },
+      timeout: 60000,
+    })
     .on('files-added', async () => {
       document.body.style.cursor = 'wait';
       try {
@@ -57,7 +64,6 @@ const initUploadManager = (): void => {
       } finally {
         uppy.reset();
         document.body.style.cursor = 'default';
-        getById('uploadGroup')?.focus();
       }
     })
     .on('error', fileUploadEvents.onError);
@@ -68,3 +74,6 @@ if (upload) {
   upload.classList.remove(hidden);
   initUploadManager();
 }
+
+const fileInput = qs('.uppy-FileInput-input');
+fileInput?.setAttribute('tabindex', '-1');

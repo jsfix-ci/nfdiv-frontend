@@ -1,8 +1,9 @@
 import { defaultViewArgs } from '../../../test/unit/utils/defaultViewArgs';
 import { mockRequest } from '../../../test/unit/utils/mockRequest';
 import { mockResponse } from '../../../test/unit/utils/mockResponse';
-import { Language, generatePageContent } from '../../steps/common/common.content';
-import { DivorceOrDissolution, Gender, State } from '../case/definition';
+import { SupportedLanguages } from '../../modules/i18n';
+import { generatePageContent } from '../../steps/common/common.content';
+import { ApplicationType, DivorceOrDissolution, Gender, State } from '../case/definition';
 
 import { GetController } from './GetController';
 
@@ -20,15 +21,15 @@ describe('GetController', () => {
   test('Should render the page', async () => {
     const controller = new GetController('page', generateContent);
 
-    const req = mockRequest();
+    const req = mockRequest({ userCase: { state: State.Draft } });
     const res = mockResponse();
     await controller.get(req, res);
 
-    expect(res.render).toBeCalledWith('page', {
+    expect(res.render).toHaveBeenCalledWith('page', {
       ...defaultViewArgs,
-      language: 'en',
+      language: SupportedLanguages.En,
       serviceName: 'Apply for a divorce',
-      isDraft: true,
+      isAmendableStates: true,
       isDivorce: true,
       text: 'english',
       userCase: req.session.userCase,
@@ -43,9 +44,9 @@ describe('GetController', () => {
     const res = mockResponse();
     await controller.get(req, res);
 
-    expect(res.render).toBeCalledWith('page', {
+    expect(res.render).toHaveBeenCalledWith('page', {
       ...defaultViewArgs,
-      isDraft: false,
+      isAmendableStates: false,
     });
   });
 
@@ -53,60 +54,63 @@ describe('GetController', () => {
     test('Language via query string', async () => {
       const controller = new GetController('page', generateContent);
 
-      const language = 'cy';
+      const language = SupportedLanguages.Cy;
       const req = mockRequest();
       const res = mockResponse();
-      req.query.lng = language;
+      req.session.lang = language;
       await controller.get(req, res);
 
-      expect(res.render).toBeCalledWith('page', {
+      expect(res.render).toHaveBeenCalledWith('page', {
         ...defaultViewArgs,
         ...generatePageContent({ language, pageContent: generateContent, userEmail, userCase: req.session.userCase }),
         text: 'welsh',
-        language: 'cy',
-        htmlLang: 'cy',
+        language: SupportedLanguages.Cy,
+        htmlLang: SupportedLanguages.Cy,
         userCase: req.session.userCase,
         userEmail,
+        existingCaseId: req.session.existingCaseId,
       });
     });
 
     test('Language via session', async () => {
       const controller = new GetController('page', generateContent);
 
-      const language = 'cy';
+      const language = SupportedLanguages.Cy;
       const req = mockRequest();
       const res = mockResponse();
       req.session.lang = language;
       await controller.get(req, res);
 
-      expect(res.render).toBeCalledWith('page', {
+      expect(res.render).toHaveBeenCalledWith('page', {
         ...defaultViewArgs,
         ...generatePageContent({ language, pageContent: generateContent, userEmail, userCase: req.session.userCase }),
         text: 'welsh',
-        language: 'cy',
-        htmlLang: 'cy',
+        language: SupportedLanguages.Cy,
+        htmlLang: SupportedLanguages.Cy,
         userCase: req.session.userCase,
         userEmail,
+        existingCaseId: req.session.existingCaseId,
       });
     });
 
     test('Language via browser settings', async () => {
       const controller = new GetController('page', generateContent);
 
-      const language = 'cy';
+      const language = SupportedLanguages.Cy;
       const req = mockRequest({ headers: { 'accept-language': language } });
       const res = mockResponse();
-      req.query.lng = language;
+      req.session.lang = language;
       await controller.get(req, res);
 
-      expect(res.render).toBeCalledWith('page', {
+      expect(res.render).toHaveBeenCalledWith('page', {
         ...defaultViewArgs,
         ...generatePageContent({ language, pageContent: generateContent, userEmail, userCase: req.session.userCase }),
         text: 'welsh',
-        language: 'cy',
-        htmlLang: 'cy',
+        language: SupportedLanguages.Cy,
+        htmlLang: SupportedLanguages.Cy,
         userCase: req.session.userCase,
         userEmail,
+        existingCaseId: req.session.existingCaseId,
       });
     });
   });
@@ -141,7 +145,7 @@ describe('GetController', () => {
     req.session.userCase.gender = Gender.FEMALE;
     await controller.get(req, res);
 
-    expect(res.render).toBeCalledWith('page', {
+    expect(res.render).toHaveBeenCalledWith('page', {
       ...defaultViewArgs,
       userCase: {
         id: '1234',
@@ -150,7 +154,6 @@ describe('GetController', () => {
       },
       text: 'english',
       userEmail,
-      selectedGender: Gender.FEMALE,
     });
   });
 
@@ -160,24 +163,32 @@ describe('GetController', () => {
       const controller = new GetController('page', getContentMock);
 
       const req = mockRequest({ userCase: { state: State.Draft } });
+      req.session.inviteCaseApplicationType = ApplicationType.SOLE_APPLICATION;
       const res = mockResponse();
       await controller.get(req, res);
 
-      const commonContent = generatePageContent({ language: 'en', userEmail, userCase: req.session.userCase });
+      const commonContent = generatePageContent({
+        language: SupportedLanguages.En,
+        userEmail,
+        userCase: req.session.userCase,
+      });
 
       expect(getContentMock).toHaveBeenCalledTimes(1);
       expect(getContentMock).toHaveBeenCalledWith({
         ...commonContent,
-        language: 'en',
+        language: SupportedLanguages.En,
         isDivorce: true,
         userCase: req.session.userCase,
-        partner: 'partner',
+        partner: 'spouse',
         userEmail,
+        existingCaseId: req.session.existingCaseId,
+        inviteCaseApplicationType: req.session.inviteCaseApplicationType,
       });
-      expect(res.render).toBeCalledWith('page', {
+      expect(res.render).toHaveBeenCalledWith('page', {
         ...defaultViewArgs,
-        isDraft: true,
+        isAmendableStates: true,
         userCase: req.session.userCase,
+        inviteCaseApplicationType: req.session.inviteCaseApplicationType,
       });
     });
 
@@ -185,7 +196,7 @@ describe('GetController', () => {
       { serviceType: DivorceOrDissolution.DIVORCE, isDivorce: true },
       { serviceType: DivorceOrDissolution.DISSOLUTION, isDivorce: false, civilKey: 'civilPartner' },
     ])('Service type %s', ({ serviceType, isDivorce }) => {
-      describe.each(['en', 'cy'] as Language[])('Language %s', language => {
+      describe.each([SupportedLanguages.En, SupportedLanguages.Cy])('Language %s', language => {
         test.each([
           { gender: Gender.MALE, partnerKey: 'husband' },
           { gender: Gender.FEMALE, partnerKey: 'wife' },
@@ -213,7 +224,7 @@ describe('GetController', () => {
             language,
             userCase: req.session.userCase,
           });
-          expect(res.render).toBeCalledWith('page', {
+          expect(res.render).toHaveBeenCalledWith('page', {
             ...defaultViewArgs,
             ...commonContent,
             isDivorce,
@@ -221,6 +232,7 @@ describe('GetController', () => {
             language,
             pageText: `something in ${language}`,
             userEmail,
+            existingCaseId: req.session.existingCaseId,
           });
         });
       });

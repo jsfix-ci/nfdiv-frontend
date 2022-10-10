@@ -1,27 +1,38 @@
-import dayjs from 'dayjs';
-import advancedFormat from 'dayjs/plugin/advancedFormat';
-
+import { getFormattedDate } from '../../../app/case/answers/formatDate';
 import { TranslationFn } from '../../../app/controller/GetController';
+import { SupportedLanguages } from '../../../modules/i18n';
 import type { CommonContent } from '../../common/common.content';
-
-dayjs.extend(advancedFormat);
+import { isApplicant2EmailUpdatePossible } from '../../common/content.utils';
+import { THEIR_EMAIL_ADDRESS, YOU_CANNOT_UPDATE_THEIR_EMAIL } from '../../urls';
 
 const en = ({ partner, userCase }: CommonContent) => ({
   title: `Your answers have been sent to your ${partner} to review`,
   sentTo: `Your answers have been sent to your ${partner} at the following email address:`,
-  theyShouldReviewBy: 'They should review them and provide some of their own information by',
-  reviewDate: userCase.dueDate || dayjs().add(2, 'weeks').format('MMMM Do YYYY'),
+  theyShouldReviewBy: 'They should review them and provide some further information by:',
+  reviewDate: getFormattedDate(userCase.dueDate),
   line3:
-    'You will receive a notification when they have reviewed. If they do not review then you will be told what you can do to progress the application.',
+    'You will receive an email notification to confirm when they have reviewed. If they do not review then you will be told what you can do to progress the application.',
+  updatePartnersEmailAddress: {
+    part1: 'If you need to, you can ',
+    part2: `update your ${partner}'s email address and resend the email`,
+    part3: '.',
+    link: isApplicant2EmailUpdatePossible(userCase) ? THEIR_EMAIL_ADDRESS : YOU_CANNOT_UPDATE_THEIR_EMAIL,
+  },
 });
 
-const cy = ({ partner, userCase }: CommonContent) => ({
-  title: `Mae eich atebion wedi'u hanfon at eich ${partner} i'w hadolygu`,
-  sentTo: `Mae eich atebion wedi'u hanfon at eich ${partner} i'r cyfeiriad e-bost canlynol:`,
-  theyShouldReviewBy: 'Dylent eu hadolygu a darparu eu gwybodaeth eu hunain erbyn',
-  reviewDate: userCase.dueDate || dayjs().add(2, 'weeks').format('MMMM Do YYYY'),
+const cy: typeof en = ({ partner, userCase }: CommonContent) => ({
+  title: `Mae eich atebion wedi cael eu hanfon at eich ${partner} i’w hadolygu`,
+  sentTo: `Mae eich atebion wedi cael eu hanfon at eich ${partner} gan ddefnyddio’r cyfeiriad e-bost canlynol:`,
+  theyShouldReviewBy: 'Dylent eu hadolygu a darparu gwybodaeth bellach erbyn',
+  reviewDate: getFormattedDate(userCase.dueDate, SupportedLanguages.Cy),
   line3:
-    "Fe gewch hysbysiad i'w gadarnhau. Os na fyddant yn adolygu'r atebion yna ddywedir wrthych beth y gallwch ei wneud i symud y cais yn ei flaen.",
+    'Byddwch yn cael hysbysiad pan fyddant wedi adolygu’ch atebion. Os na fyddant yn eu hadolygu, rhoddir wybod i chi beth allwch ei wneud i symud y cais yn ei flaen.',
+  updatePartnersEmailAddress: {
+    part1: 'Os oes arnoch angen, gallwch ',
+    part2: `ddiweddaru cyfeiriad e-bost eich ${partner} ac ail-anfon y neges e-bost`,
+    part3: '.',
+    link: isApplicant2EmailUpdatePossible(userCase) ? THEIR_EMAIL_ADDRESS : YOU_CANNOT_UPDATE_THEIR_EMAIL,
+  },
 });
 
 const languages = {

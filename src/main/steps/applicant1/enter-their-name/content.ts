@@ -9,7 +9,7 @@ const en = ({ partner }: CommonContent) => {
     title: `Enter your ${partner}’s name`,
     line1: `The court needs to know your ${partner}’s full name.`,
     firstNames: `Your ${partner}’s first name(s)`,
-    middleNames: `Your ${partner}’s middle name(s)`,
+    middleNames: `Your ${partner}’s middle name(s) (if they have one)`,
     lastNames: `Your ${partner}’s last name(s)`,
     errors: {
       applicant2FirstNames: {
@@ -27,8 +27,29 @@ const en = ({ partner }: CommonContent) => {
   };
 };
 
-// @TODO translations
-const cy = en;
+const cy: typeof en = ({ partner }: CommonContent) => {
+  const invalid = 'Rydych wedi teipio nod annilys, fel rhif. Nodwch eich enw gan ddefnyddio llythrennau yn unig.';
+  return {
+    title: `Nodwch enw eich ${partner}`,
+    line1: `Mae’r llys angen gwybod beth yw enw llawn eich ${partner}.`,
+    firstNames: `Enw(au) cyntaf eich ${partner}`,
+    middleNames: `Enw(au) canol eich ${partner} (os oes ganddynt un)`,
+    lastNames: `Enw(au) olaf eich ${partner}`,
+    errors: {
+      applicant2FirstNames: {
+        required: 'Nid ydych wedi nodi ei enw cyntaf. Nodwch ef cyn parhau.',
+        invalid,
+      },
+      applicant2MiddleNames: {
+        invalid,
+      },
+      applicant2LastNames: {
+        required: 'Nid ydych wedi nodi ei enw olaf. Nodwch ef cyn parhau.',
+        invalid,
+      },
+    },
+  };
+};
 
 export const form: FormContent = {
   fields: {
@@ -37,6 +58,7 @@ export const form: FormContent = {
       label: l => l.firstNames,
       labelSize: 'normal',
       classes: 'govuk-input--width-20',
+      autocomplete: 'given-name',
       validator: input => isFieldFilledIn(input) || isFieldLetters(input),
     },
     applicant2MiddleNames: {
@@ -44,6 +66,7 @@ export const form: FormContent = {
       label: l => l.middleNames,
       labelSize: 'normal',
       classes: 'govuk-input--width-20',
+      autocomplete: 'middle-name',
       validator: isFieldLetters,
     },
     applicant2LastNames: {
@@ -51,6 +74,7 @@ export const form: FormContent = {
       label: l => l.lastNames,
       labelSize: 'normal',
       classes: 'govuk-input--width-20',
+      autocomplete: 'last-name',
       validator: input => isFieldFilledIn(input) || isFieldLetters(input),
     },
   },

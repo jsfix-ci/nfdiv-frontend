@@ -1,62 +1,54 @@
 import { State } from '../../main/app/case/definition';
-import {
-  APPLICANT_2,
-  APPLY_FINANCIAL_ORDER,
-  HAS_RELATIONSHIP_BROKEN_URL,
-  HOW_DO_YOU_WANT_TO_RESPOND,
-  RESPONDENT,
-} from '../../main/steps/urls';
+import { ADDRESS_PRIVATE, HOME_URL, THEIR_EMAIL_ADDRESS } from '../../main/steps/urls';
+import { autoLogin, config as testConfig } from '../config';
 
-import {
-  checkOptionFor,
-  iAmOnPage,
-  iClearTheForm,
-  iClick,
-  iSetApp2UsersCaseTo,
-  iSetRespondentUsersCaseTo,
-  iSetTheUsersCaseTo,
-} from './common';
+import { checkOptionFor, iAmOnPage, iClearTheForm, iClick, iSetTheUsersCaseTo, iWait } from './common';
 import { iEnterTheUkAddress } from './postcode';
 
 const { I } = inject();
 
 Given("I've already completed the form using the fixture {string}", async (fixture: string) => {
+  I.amOnPage(HOME_URL);
   const fixtureJson = require(`../functional/fixtures/${fixture}`)[fixture];
 
   await iSetTheUsersCaseTo(fixtureJson);
 
-  const url = await I.grabCurrentUrl();
-  I.amOnPage(APPLY_FINANCIAL_ORDER);
-  iClick('Continue');
-  I.amOnPage(url);
+  I.amOnPage(ADDRESS_PRIVATE);
+  I.click('I do not need my contact details kept private');
+  I.click('Continue');
 });
+
+Given('I set the email address for applicant 2', async () => {
+  I.amOnPage(THEIR_EMAIL_ADDRESS);
+  const applicant2EmailAddress = testConfig.GetUser(parseInt('2')).username;
+
+  await iClearTheForm();
+  iClick("Your husband's email address");
+  I.type(applicant2EmailAddress);
+  I.click('Continue');
+});
+
+Given(
+  "I've already completed the form using the fixture {string} for {string}",
+  async (fixture: string, applicant: string) => {
+    const fixtureJson = require(`../functional/fixtures/${fixture}`)[fixture];
+
+    await iSetTheUsersCaseTo(fixtureJson);
+
+    I.amOnPage(`/${applicant}` + ADDRESS_PRIVATE);
+    I.click('I do not need my contact details kept private');
+    I.click('Continue');
+  }
+);
 
 Given('I set the case state to {string}', async (state: State) => {
-  iSetTheUsersCaseTo({
+  const user = testConfig.GetCurrentUser();
+  await iSetTheUsersCaseTo({
     state,
   });
-});
-
-Given("I've already completed the form using the fixture {string} for applicant 2", async (fixture: string) => {
-  const fixtureJson = require(`../functional/fixtures/${fixture}`)[fixture];
-
-  await iSetApp2UsersCaseTo(fixtureJson);
-
-  const url = await I.grabCurrentUrl();
-  I.amOnPage(APPLICANT_2 + HAS_RELATIONSHIP_BROKEN_URL);
-  iClick('Continue');
-  I.amOnPage(url);
-});
-
-Given("I've already completed the form using the fixture {string} for respondent", async (fixture: string) => {
-  const fixtureJson = require(`../functional/fixtures/${fixture}`)[fixture];
-
-  await iSetRespondentUsersCaseTo(fixtureJson);
-
-  const url = await I.grabCurrentUrl();
-  I.amOnPage(RESPONDENT + HOW_DO_YOU_WANT_TO_RESPOND);
-  iClick('Continue');
-  I.amOnPage(url);
+  await I.grabCurrentUrl();
+  I.amOnPage('/logout');
+  await autoLogin.login(I, user.username, user.password, false);
 });
 
 Given("I've completed all happy path questions correctly", async () => {
@@ -66,7 +58,7 @@ Given("I've completed all happy path questions correctly", async () => {
   iClick('Continue');
 
   I.waitInUrl('/irretrievable-breakdown');
-  iClick('Yes, my marriage has irretrievably broken down');
+  iClick('I confirm my marriage has broken down irretrievably');
   iClick('Continue');
 
   I.waitInUrl('/date-from-certificate');
@@ -152,6 +144,10 @@ Given("I've completed all happy path questions correctly", async () => {
   await iEnterTheUkAddress('BUCKINGHAM PALACE, LONDON, SW1A 1AA');
   iClick('Continue');
 
+  I.waitInUrl('/do-they-have-a-solicitor');
+  iClick('No');
+  iClick('Continue');
+
   I.waitInUrl('/their-email-address');
   iClearTheForm();
   iClick("Your husband's email address");
@@ -181,9 +177,8 @@ Given("I've completed all happy path questions correctly", async () => {
   iClearTheForm();
   iClick('I cannot upload my original marriage certificate');
   iClick('Continue');
-
-  I.waitForText('Equality and diversity questions');
-  iClick("I don't want to answer these questions");
+  iWait(5);
+  I.amOnPage(HOME_URL);
 
   I.waitInUrl('/check-your-answers');
   iClearTheForm();
@@ -199,6 +194,7 @@ Given('I pay and submit the application', () => {
   iClick('Pay and submit application');
 
   completePayment();
+  I.waitInUrl('/application-submitted', 15);
 });
 
 Given('I pay and submit the joint application', () => {
@@ -206,6 +202,7 @@ Given('I pay and submit the joint application', () => {
   iClick('Pay and submit');
 
   completePayment();
+  I.waitInUrl('/joint-application-submitted', 15);
 });
 
 const completePayment = () => {
@@ -232,6 +229,4 @@ const completePayment = () => {
 
   I.waitInUrl('/card_details');
   I.click('Confirm payment');
-
-  I.waitInUrl('/application-submitted', 15);
 };

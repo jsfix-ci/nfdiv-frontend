@@ -1,78 +1,60 @@
 {% from "components/hmcts-progress-bar/macro.njk" import hmctsProgressBar %}
 
+{% macro textWithVisuallyHiddenSpan(text, isComplete) %}
+  {{text}} <span class="govuk-visually-hidden">{{'' if isComplete else 'not '}}completed</span>
+{% endmacro %}
+
 {% if isJointApplication %}
   {% set items = [{
     label: {
-      text: applicationSubmitted
+      html: textWithVisuallyHiddenSpan(submitted, true)
     },
     complete: true,
     active: false
   }, {
     label: {
-      text: conditionalOrderApplication
+      html: textWithVisuallyHiddenSpan(conditionalOrder, displayState.isAtOrAfter('AwaitingLegalAdvisorReferral'))
     },
-    complete: progressionIndex > 0,
-    active: hasApplicantConfirmedReceipt
+    complete: displayState.isAtOrAfter('ConditionalOrderPronounced'),
+    active: displayState.isAtOrAfter('AwaitingConditionalOrder') and displayState.isBefore('ConditionalOrderPronounced')
   }, {
     label: {
-      text: conditionalOrderGranted
+      html: textWithVisuallyHiddenSpan(finalOrder, displayState.state() == 'FinalOrderComplete')
     },
-    complete: progressionIndex > 1,
-    active: progressionIndex == 1
-  }, {
-    label: {
-      text: finalOrderApplication
-    },
-    complete: progressionIndex > 2,
-    active: progressionIndex == 2
-  }, {
-    label: {
-      text: applicationEnded
-    },
-    complete: progressionIndex >= 3,
-    active: progressionIndex == 3
+    complete: displayState.state() == 'FinalOrderComplete',
+    active: displayState.isAtOrAfter('AwaitingFinalOrder') and displayState.isBefore('FinalOrderComplete')
   }] %}
 {% else %}
   {% set items = [{
     label: {
-      text: applicationSubmitted
+      html: textWithVisuallyHiddenSpan(submitted, true)
     },
     complete: true,
     active: false
   }, {
     label: {
-      text: response
+      html: textWithVisuallyHiddenSpan(response, displayState.isAfter('IssuedToBailiff'))
     },
-    complete: progressionIndex > 5,
-    active: progressionIndex >= 0 and progressionIndex < 6
+    complete: displayState.isAfter('IssuedToBailiff'),
+    active: displayState.isAtOrAfter('AwaitingAos') and displayState.isBefore('Holding')
   }, {
     label: {
-      text: conditionalOrderApplication
+      html: textWithVisuallyHiddenSpan(conditionalOrder, displayState.isAtOrAfter('AwaitingLegalAdvisorReferral'))
     },
-    complete: progressionIndex > 6,
-    active: hasApplicantConfirmedReceipt
+    complete: displayState.isAtOrAfter('ConditionalOrderPronounced'),
+    active: displayState.isAtOrAfter('AwaitingConditionalOrder') and displayState.isBefore('ConditionalOrderPronounced')
   }, {
     label: {
-      text: conditionalOrderGranted
+      html: textWithVisuallyHiddenSpan(finalOrder, displayState.isAtOrAfter('FinalOrderPending'))
     },
-    complete: progressionIndex > 7,
-    active: progressionIndex == 7
-  }, {
-    label: {
-      text: finalOrderApplication
-    },
-    complete: progressionIndex > 8,
-    active: progressionIndex == 8
-  }, {
-    label: {
-      text: applicationEnded
-    },
-    complete: progressionIndex >= 9,
-    active: progressionIndex == 9
+    complete: displayState.state() == 'FinalOrderComplete',
+    active: displayState.isAtOrAfter('AwaitingFinalOrder') and displayState.isBefore('FinalOrderComplete')
   }] %}
 {% endif %}
 
-{{ hmctsProgressBar({
-  classes: 'hub-progress-bar',
-  items: items
-}) }}
+<div class='hub-progress-bar-container' aria-label='{{ progressBarAriaLabel }}'>
+  {{ hmctsProgressBar({
+    classes: 'hub-progress-bar',
+    items: items
+  }) }}
+</div>

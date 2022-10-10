@@ -1,7 +1,19 @@
+import { existingOrNew } from '../../steps/existing-application/content';
 import { Case, CaseDate, CaseWithId } from '../case/case';
 import { AnyObject } from '../controller/PostController';
 
 import { setupCheckboxParser } from './parser';
+
+const WHITELISTED_FIELDS = [
+  'applicant1ConfirmReceipt',
+  'applicant2ConfirmReceipt',
+  'applicant1ApplyForConditionalOrderStarted',
+  'applicant2ApplyForConditionalOrderStarted',
+  'saveAndSignOut',
+  'saveBeforeSessionTimeout',
+  '_csrf',
+  'connections',
+];
 
 export class Form {
   constructor(private readonly fields: FormFields) {}
@@ -31,7 +43,11 @@ export class Form {
         });
     }
 
-    return { ...body, ...subFieldsParsedBody, ...Object.fromEntries(parsedBody) };
+    const formFieldValues = Object.keys(body)
+      .filter(key => WHITELISTED_FIELDS.includes(key) || fields[key])
+      .reduce((newBody, key) => ({ [key]: body[key], ...newBody }), {});
+
+    return { ...formFieldValues, ...subFieldsParsedBody, ...Object.fromEntries(parsedBody) };
   }
 
   /**
@@ -103,7 +119,7 @@ type LanguageLookup = (lang: Record<string, never>) => string;
 
 type Parser = (value: Record<string, unknown> | string[]) => void;
 
-type Label = string | LanguageLookup;
+export type Label = string | LanguageLookup;
 
 type Warning = Label;
 
@@ -112,7 +128,7 @@ export type ValidationCheck = (
   formData: Partial<Case>
 ) => void | string;
 export type FormFields = Record<string, FormField>;
-export type FormFieldsFn = (userCase: Partial<Case>) => FormFields;
+export type FormFieldsFn = (userCase: Partial<Case>, language?: string) => FormFields;
 
 export interface FormContent {
   submit: {
@@ -130,6 +146,7 @@ export interface FormOptions {
   label?: Label;
   labelHidden?: boolean;
   labelSize?: string | null;
+  labelAttributes?: Record<string, string>;
   hideError?: boolean;
   values: FormInput[];
   attributes?: Partial<HTMLInputElement | HTMLTextAreaElement>;
@@ -142,8 +159,8 @@ export interface FormInput {
   name?: string;
   label: Label;
   hint?: Label;
-  subtext?: Label;
   classes?: string;
+  autocomplete?: string;
   hidden?: boolean;
   selected?: boolean;
   value?: string | number;
@@ -173,4 +190,5 @@ interface CaseWithFormData extends CaseWithId {
   saveAndSignOut?: string;
   saveBeforeSessionTimeout?: string;
   sendToApplicant2ForReview?: string;
+  existingOrNewApplication?: existingOrNew;
 }

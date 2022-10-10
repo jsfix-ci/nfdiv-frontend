@@ -1,6 +1,6 @@
 import Axios, { AxiosStatic } from 'axios';
 
-import { CALLBACK_URL } from '../../../steps/urls';
+import { APPLICANT_2_SIGN_IN_URL, CALLBACK_URL, SIGN_IN_URL } from '../../../steps/urls';
 
 import { getRedirectUrl, getSystemUser, getUserDetails } from './oidc';
 
@@ -9,12 +9,18 @@ jest.mock('axios');
 const mockedAxios = Axios as jest.Mocked<AxiosStatic>;
 
 const token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiZ2l2ZW5fbmFtZSI6IkpvaG4iLCJmYW1pbHlfbmFtZSI6IkRvcmlhbiIsInVpZCI6IjEyMyJ9.KaDIFSDdD3ZIYCl_qavvYbQ3a4abk47iBOZhB1-9mUQ';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiZ2l2ZW5fbmFtZSI6IkpvaG4iLCJmYW1pbHlfbmFtZSI6IkRvcmlhbiIsInVpZCI6IjEyMyIsInJvbGVzIjpbImNpdGl6ZW4iXX0.rxjx6XsSNNYavVppwKAqWiNWT_GxN4vjVzdLRe6q14I';
 
 describe('getRedirectUrl', () => {
   test('should create a valid URL to redirect to the login screen', () => {
-    expect(getRedirectUrl('http://localhost', CALLBACK_URL)).toBe(
+    expect(getRedirectUrl('http://localhost', SIGN_IN_URL)).toBe(
       'https://idam-web-public.aat.platform.hmcts.net/login?client_id=divorce&response_type=code&redirect_uri=http://localhost/oauth2/callback'
+    );
+  });
+
+  test('should create a valid URL to redirect to applicant2 login screen', () => {
+    expect(getRedirectUrl('http://localhost', APPLICANT_2_SIGN_IN_URL)).toBe(
+      'https://idam-web-public.aat.platform.hmcts.net/login?client_id=divorce&response_type=code&redirect_uri=http://localhost/oauth2/callback-applicant2'
     );
   });
 });
@@ -35,6 +41,7 @@ describe('getUserDetails', () => {
       givenName: 'John',
       familyName: 'Dorian',
       id: '123',
+      roles: ['citizen'],
     });
   });
 });
@@ -55,6 +62,7 @@ describe('getCaseWorkerUser', () => {
       givenName: 'John',
       familyName: 'Dorian',
       id: '123',
+      roles: ['citizen'],
     });
   });
 });

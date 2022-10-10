@@ -1,4 +1,4 @@
-@import '~govuk-frontend';
+@import 'govuk-frontend';
 @import '~@hmcts/frontend/all';
 
 @import './banner';
@@ -8,6 +8,9 @@
 @import './application-submitted';
 @import './hub-page';
 @import './cookie-banner';
+@import './check-your-answers';
+@import './webchat';
+@import './review-pages';
 
 .hmcts-button-link,
 .uppy-FileInput-btn {
@@ -29,4 +32,9 @@ section {
 
 .hidden {
   display: none;
+}
+
+.pdf-canvas {
+  border: 1px solid black;
+  direction: ltr;
 }

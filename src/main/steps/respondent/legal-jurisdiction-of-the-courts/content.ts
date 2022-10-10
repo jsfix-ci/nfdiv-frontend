@@ -2,18 +2,22 @@ import { YesOrNo } from '../../../app/case/definition';
 import { TranslationFn } from '../../../app/controller/GetController';
 import { FormContent } from '../../../app/form/Form';
 import { isFieldFilledIn } from '../../../app/form/validation';
-import { connectionBulletPointsTextForRespondent } from '../../../app/jurisdiction/bulletedPointsContent';
-import { jurisdictionMoreDetailsContent } from '../../../steps/applicant1/connection-summary/content';
+import { connectionBulletPointsSummarisedForAllUsers } from '../../../app/jurisdiction/bulletedPointsContent';
+import { jurisdictionMoreDetailsContent } from '../../../app/jurisdiction/moreDetailsContent';
 import type { CommonContent } from '../../common/common.content';
+import { accessibleDetailsSpan } from '../../common/content.utils';
 
-const en = ({ isDivorce, partner, required, userCase }: CommonContent) => {
+const en = ({ isDivorce, partner, required, userCase, isJointApplication }: CommonContent) => {
   return {
     title: 'The legal power (jurisdiction) of the courts',
     line1: `Your ${partner} was asked some questions to find out whether the courts of England and Wales have the legal power (jurisdiction) to ${
       isDivorce ? 'grant your divorce' : 'end your civil partnership'
     }.`,
     line2: 'Their answers indicated that the reason the courts have jurisdiction is because:',
-    connectionBulletPoints: userCase ? connectionBulletPointsTextForRespondent(userCase.connections!) : [],
+    connectionBulletPoints:
+      userCase && userCase.connections
+        ? connectionBulletPointsSummarisedForAllUsers(userCase.connections, true, isDivorce, isJointApplication)
+        : [],
     jurisdictionAgree: `Do you agree the courts of England and Wales have legal power (jurisdiction) to ${
       isDivorce ? 'grant your divorce' : 'end your civil partnership'
     }?`,
@@ -24,8 +28,8 @@ const en = ({ isDivorce, partner, required, userCase }: CommonContent) => {
     yes: 'Yes, I agree the courts have jurisdiction',
     no: 'No, I do not agree the courts have jurisdiction',
     readMore: 'What this means',
-    jurisdictionsMoreDetails: jurisdictionMoreDetailsContent(userCase?.connections, isDivorce, true)
-      .connectedToEnglandWales,
+    jurisdictionsMoreDetails: jurisdictionMoreDetailsContent(userCase?.connections, true, isDivorce, partner, true)
+      .text,
     errors: {
       jurisdictionAgree: {
         required,
@@ -42,7 +46,43 @@ const en = ({ isDivorce, partner, required, userCase }: CommonContent) => {
   };
 };
 
-const cy = en;
+const cy: typeof en = ({ isDivorce, partner, required, userCase, isJointApplication }: CommonContent) => {
+  return {
+    title: 'Pŵer cyfreithiol (awdurdodaeth) y llysoedd',
+    line1: `Gofynnwyd cwestiynau i’ch ${partner} i ganfod p’un a oes gan y llysoedd yng Nghymru a Lloegr bŵer cyfreithiol (awdurdodaeth) i ${
+      isDivorce ? 'ganiatáu i chi gael ysgariad' : 'ddod â’ch partneriaeth sifil i ben'
+    }.`,
+    line2: 'Dengys eu hatebion mai’r rheswm pam bod gan y llysoedd awdurdodaeth yw oherwydd:',
+    connectionBulletPoints:
+      userCase && userCase.connections
+        ? connectionBulletPointsSummarisedForAllUsers(userCase.connections, false, isDivorce, isJointApplication)
+        : [],
+    jurisdictionAgree: `Ydych chi’n cytuno bod gan lysoedd Cymru a Lloegr y pŵer cyfreithiol (awdurdodaeth) i ${
+      isDivorce ? 'ganiatáu i chi gael ysgariad' : 'ddod â’ch partneriaeth sifil i ben'
+    }?`,
+    reasonCourtsOfEnglandAndWalesHaveNoJurisdiction: `Eglurwch pam ydych chi’n credu nad oes gan lysoedd Cymru a Lloegr y pŵer cyfreithiol (awdurdodaeth) i ${
+      isDivorce ? 'ganiatáu i chi gael ysgariad' : 'ddod â’ch priodas sifil i ben'
+    }.`,
+    inWhichCountryIsYourLifeMainlyBased: 'Ym mha wlad ydych chi’n byw yn bennaf?',
+    yes: 'Ydw, rwy’n cytuno bod gan y llysoedd awdurdodaeth',
+    no: 'Nac ydw, nid wyf yn cytuno bod gan y llysoedd awdurdodaeth',
+    readMore: 'Beth mae hyn yn ei olygu',
+    jurisdictionsMoreDetails: jurisdictionMoreDetailsContent(userCase?.connections, false, isDivorce, partner, true)
+      .text,
+    errors: {
+      jurisdictionAgree: {
+        required,
+      },
+      reasonCourtsOfEnglandAndWalesHaveNoJurisdiction: {
+        required:
+          'Mae arnoch angen esbonio pam eich bod yn meddwl nad oes gan llysoedd Cymru a Lloegr bŵer cyfreithiol (awdurdodaeth)',
+      },
+      inWhichCountryIsYourLifeMainlyBased: {
+        required: 'Mae arnoch angen nodi ym mha wlad rydych yn treulio’r rhan fwyaf o’ch hamser.',
+      },
+    },
+  };
+};
 
 export const form: FormContent = {
   fields: {
@@ -89,8 +129,10 @@ const languages = {
 
 export const generateContent: TranslationFn = content => {
   const translations = languages[content.language](content);
+  const readMoreJurisdiction = accessibleDetailsSpan(translations['readMore'], translations['title']);
   return {
     ...translations,
+    readMoreJurisdiction,
     form,
   };
 };

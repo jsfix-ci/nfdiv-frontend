@@ -8,20 +8,13 @@ export class UploadedFiles {
   constructor() {
     this.storeEl =
       (getById('applicant1UploadedFiles') as HTMLInputElement) ||
-      (getById('applicant2UploadedFiles') as HTMLInputElement);
+      (getById('applicant2UploadedFiles') as HTMLInputElement) ||
+      (getById('coClarificationUploadedFiles') as HTMLInputElement);
     this.documents = JSON.parse(this.storeEl?.value || '[]');
   }
 
   add(documents: UploadedFile[]): void {
-    this.documents.push(...documents);
-    this.updateStore();
-  }
-
-  remove(documentId: string): void {
-    const indexToDelete = this.documents.findIndex(f => f.id === documentId);
-    if (indexToDelete > -1) {
-      this.documents.splice(indexToDelete, 1);
-    }
+    this.documents = documents.concat(this.documents);
     this.updateStore();
   }
 

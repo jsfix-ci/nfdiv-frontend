@@ -6,6 +6,8 @@ import nunjucks from 'nunjucks';
 import { DivorceOrDissolution } from '../../app/case/definition';
 import { Form, FormInput } from '../../app/form/Form';
 
+const config = require('config');
+
 export class Nunjucks {
   enableFor(app: express.Express): void {
     app.set('view engine', 'njk');
@@ -40,6 +42,7 @@ export class Nunjucks {
     env.addGlobal('formItems', function (items: FormInput[], userAnswer: string | Record<string, string>) {
       return items.map(i => ({
         id: i.id,
+        label: i.label,
         text: this.env.globals.getContent.call(this, i.label),
         name: i.name,
         classes: i.classes,
@@ -57,16 +60,17 @@ export class Nunjucks {
                 warning: this.ctx.warning,
               }),
             };
+          } else if (i.subFields) {
+            return {
+              html:
+                env.render(`${__dirname}/../../steps/common/form/fields.njk`, {
+                  ...this.ctx,
+                  form: { fields: i.subFields },
+                }) + (i.conditionalText ? this.env.globals.getContent.call(this, i.conditionalText) : ''),
+            };
           } else if (i.conditionalText) {
             return {
               html: this.env.globals.getContent.call(this, i.conditionalText),
-            };
-          } else if (i.subFields) {
-            return {
-              html: env.render(`${__dirname}/../../steps/common/form/fields.njk`, {
-                ...this.ctx,
-                form: { fields: i.subFields },
-              }),
             };
           } else {
             return undefined;
@@ -74,6 +78,16 @@ export class Nunjucks {
         })(),
       }));
     });
+
+    const globals = {
+      webchat: {
+        avayaUrl: config.get('webchat.avayaUrl'),
+        avayaClientUrl: config.get('webchat.avayaClientUrl'),
+        avayaService: config.get('webchat.avayaService'),
+      },
+    };
+
+    env.addGlobal('globals', globals);
 
     env.addFilter('json', function (value, spaces) {
       if (value instanceof nunjucks.runtime.SafeString) {

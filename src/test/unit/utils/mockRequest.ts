@@ -1,5 +1,6 @@
 import { DivorceOrDissolution } from '../../../main/app/case/definition';
 import { AppRequest } from '../../../main/app/controller/AppRequest';
+import { SupportedLanguages } from '../../../main/modules/i18n';
 
 export const mockRequest = ({
   headers = {},
@@ -11,13 +12,16 @@ export const mockRequest = ({
   isApplicant2 = false,
 } = {}): AppRequest =>
   ({
-    headers: { 'accept-language': 'en', ...headers },
+    headers: { 'accept-language': SupportedLanguages.En, ...headers },
     body,
     locals: {
       api: {
         triggerEvent: jest.fn(),
-        addPayment: jest.fn(),
+        triggerPaymentEvent: jest.fn(),
         getCaseById: jest.fn(),
+        isApplicant2: jest.fn(),
+        getNewInviteCase: jest.fn(),
+        createCase: jest.fn(),
       },
       logger: {
         info: jest.fn(),
@@ -39,6 +43,8 @@ export const mockRequest = ({
         divorceOrDissolution: DivorceOrDissolution.DIVORCE,
         ...userCase,
       },
+      lang: SupportedLanguages.En,
+      existingCaseId: '123456',
       isApplicant2,
       save: jest.fn(done => done()),
       destroy: jest.fn(done => done()),

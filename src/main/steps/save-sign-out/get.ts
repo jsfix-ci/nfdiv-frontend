@@ -3,7 +3,8 @@ import { Response } from 'express';
 
 import { AppRequest } from '../../app/controller/AppRequest';
 import { GetController } from '../../app/controller/GetController';
-import { generateContent } from '../../steps/save-sign-out/content';
+
+import { generateContent } from './content';
 
 @autobind
 export class SaveSignOutGetController extends GetController {
@@ -13,6 +14,7 @@ export class SaveSignOutGetController extends GetController {
 
   public async get(req: AppRequest, res: Response): Promise<void> {
     res.locals['email'] = req.session.user?.email;
+    res.locals['lang'] = req.session.lang;
 
     req.session.destroy(err => {
       if (err) {

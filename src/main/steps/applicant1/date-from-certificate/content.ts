@@ -1,12 +1,13 @@
 import { CaseDate } from '../../../app/case/case';
 import { TranslationFn } from '../../../app/controller/GetController';
-import { FormContent } from '../../../app/form/Form';
+import { FormContent, FormFieldsFn } from '../../../app/form/Form';
 import { covertToDateObject } from '../../../app/form/parser';
 import { areDateFieldsFilledIn, isDateInputInvalid, isFutureDate } from '../../../app/form/validation';
+import { SupportedLanguages } from '../../../modules/i18n';
 
 const en = ({ isDivorce }) => ({
   title: isDivorce ? 'When did you get married?' : 'When did you form your civil partnership?',
-  line1: `Enter the date from your ${isDivorce ? 'marriage certificate' : 'civil partnership certificate'}`,
+  line1: `Enter the exact date from your ${isDivorce ? 'marriage certificate' : 'civil partnership certificate'}`,
   hint: 'For example, 31 3 2002',
   errors: {
     relationshipDate: {
@@ -37,7 +38,7 @@ const cy: typeof en = ({ isDivorce }) => ({
 });
 
 export const form: FormContent = {
-  fields: {
+  fields: (userCase, language) => ({
     relationshipDate: {
       type: 'date',
       classes: 'govuk-date-input',
@@ -46,19 +47,19 @@ export const form: FormContent = {
       hint: l => l.hint,
       values: [
         {
-          label: l => l.dateFormat['day'],
+          label: language === SupportedLanguages.Cy ? 'Diwrnod' : 'Day',
           name: 'day',
           classes: 'govuk-input--width-2',
           attributes: { maxLength: 2 },
         },
         {
-          label: l => l.dateFormat['month'],
+          label: language === SupportedLanguages.Cy ? 'Mis' : 'Month',
           name: 'month',
           classes: 'govuk-input--width-2',
           attributes: { maxLength: 2 },
         },
         {
-          label: l => l.dateFormat['year'],
+          label: language === SupportedLanguages.Cy ? 'Blwyddyn' : 'Year',
           name: 'year',
           classes: 'govuk-input--width-4',
           attributes: { maxLength: 4 },
@@ -70,7 +71,7 @@ export const form: FormContent = {
         isDateInputInvalid(value as CaseDate) ||
         isFutureDate(value as CaseDate),
     },
-  },
+  }),
   submit: {
     text: l => l.continue,
   },
@@ -85,6 +86,6 @@ export const generateContent: TranslationFn = content => {
   const translations = languages[content.language](content);
   return {
     ...translations,
-    form,
+    form: { ...form, fields: (form.fields as FormFieldsFn)(content.userCase || {}, content.language) },
   };
 };

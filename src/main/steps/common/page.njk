@@ -6,6 +6,20 @@
 {% block head %}
   {% include "./webpack/css.njk" %}
   <!-- {{ userCase.id }} -->
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WG59GG2');</script>
+  <!-- End Google Tag Manager -->
+{% endblock %}
+
+{% block bodyStart %}
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WG59GG2"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
 {% endblock %}
 
 {% block header %}
@@ -27,12 +41,17 @@
   {{ serviceName }} - {{ title }} - {{ govUk }}
 {% endblock %}
 
+{% set bannerHtml %}
+  {{ feedback.part1 }}<a class="govuk-link" aria-label="{{ feedback.ariaLabel }}" href="{{ feedback.link }}{{ pageUrl }}" target="_blank">{{ feedback.part2 }}</a>{{ feedback.part3 }}
+  <a href="{{ languageToggle.link }}" class="govuk-link language">{{ languageToggle.text }}</a>
+{% endset %}
+
 {% block beforeContent %}
   {{ govukPhaseBanner({
     tag: {
       text: phase
     },
-    html: feedback + languageToggle
+    html: bannerHtml
   }) }}
   {% block backLink %}
     <a href="#" class="govuk-back-link">{{ back }}</a>
@@ -59,7 +78,7 @@
       {% endif %}
 
       {% block contact_us %}
-        {% include "./contact-us.njk" %}
+        {% include "./contact-us/details.njk" %}
       {% endblock %}
     </div>
   </div>
@@ -84,6 +103,10 @@
         {
           href: "/terms-and-conditions",
           text: termsAndConditions
+        },
+        {
+          href: "/contact-us",
+          text: contactUs
         }
       ]
     }

@@ -9,13 +9,18 @@ services:
     clientSecret: IDAM_SECRET
   case:
     url: CCD_URL
+    checkDivCases: SKIP_DIV_CASE_CHECK
   payments:
     url: PAYMENTS_API_URL
+  fees:
+    url: FEES_API_URL
   documentManagement:
     url: DOCUMENT_MANAGEMENT_URL
   equalityAndDiversity:
     url: EQUALITY_URL
     tokenKey: PCQ_TOKEN
+  decreeNisi:
+    url: DECREE_NISI_URL
 port: PORT
 session:
   redis:
@@ -24,3 +29,7 @@ e2e:
   userTestPassword: TEST_PASSWORD
 appInsights:
   instrumentationKey: APPINSIGHTS_KEY
+webchat:
+  avayaUrl: WEBCHAT_AVAYA_URL
+  avayaClientUrl: WEBCHAT_AVAYA_CLIENT_URL
+  avayaService: WEBCHAT_AVAYA_SERVICE

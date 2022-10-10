@@ -2,7 +2,7 @@ import { mockRequest } from '../../../test/unit/utils/mockRequest';
 import { mockResponse } from '../../../test/unit/utils/mockResponse';
 import { APPLICANT_2, HUB_PAGE, RESPONDENT, SIGN_OUT_URL, YOU_NEED_TO_REVIEW_YOUR_APPLICATION } from '../../steps/urls';
 import * as oidc from '../auth/user/oidc';
-import * as caseApi from '../case/CaseApi';
+import * as caseApi from '../case/case-api';
 import { ApplicationType, SYSTEM_LINK_APPLICANT_2 } from '../case/definition';
 import { FormContent, FormFields } from '../form/Form';
 
@@ -19,6 +19,7 @@ describe('AccessCodePostController', () => {
       email: 'user@caseworker.com',
       givenName: 'case',
       familyName: 'worker',
+      roles: ['caseworker'],
     });
   });
 
@@ -37,60 +38,102 @@ describe('AccessCodePostController', () => {
     const body = { accessCode: 'QWERTY78', caseReference: '1234123412341234' };
     const controller = new AccessCodePostController(mockFormContent.fields);
 
-    const caseData = {
-      accessCode: 'QWERTY78',
-      caseReference: '1234123412341234',
-      applicationType: ApplicationType.JOINT_APPLICATION,
-    };
-
-    const req = mockRequest({ body });
-    (getCaseApiMock as jest.Mock).mockReturnValue({
+    const caseApiMockFn = {
       triggerEvent: jest.fn(() => {
         return {
+          accessCode: 'QWERTY78',
+          id: '1234123412341234',
           applicationType: ApplicationType.JOINT_APPLICATION,
         };
       }),
       getCaseById: jest.fn(() => {
         return {
           accessCode: 'QWERTY78',
-          caseReference: '1234123412341234',
+          id: '1234123412341234',
           applicationType: ApplicationType.JOINT_APPLICATION,
         };
       }),
-    });
-    (req.locals.api.triggerEvent as jest.Mock).mockResolvedValueOnce(caseData);
+      unlinkStaleDraftCaseIfFound: jest.fn(() => {
+        return undefined;
+      }),
+    };
+    (getCaseApiMock as jest.Mock).mockReturnValue(caseApiMockFn);
+
+    const req = mockRequest({ body });
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith(
+    expect(caseApiMockFn.triggerEvent).toHaveBeenCalledWith(
       '1234123412341234',
       {
         accessCode: 'QWERTY78',
         caseReference: '1234123412341234',
+        applicant2Email: 'test@example.com',
         applicant2FirstNames: 'First name',
         applicant2LastNames: 'Last name',
         respondentUserId: '123456',
       },
       SYSTEM_LINK_APPLICANT_2
     );
-    expect(res.redirect).toBeCalledWith(`${APPLICANT_2}${YOU_NEED_TO_REVIEW_YOUR_APPLICATION}`);
+    expect(res.redirect).toHaveBeenCalledWith(`${APPLICANT_2}${YOU_NEED_TO_REVIEW_YOUR_APPLICATION}`);
     expect(req.session.errors).toStrictEqual([]);
+    expect(req.session.existingCaseId).toStrictEqual('1234123412341234');
   });
 
   test('Should have no errors and redirect to the next page in AOS journey', async () => {
     const body = { accessCode: 'QWERTY78', caseReference: '1234123412341234' };
     const controller = new AccessCodePostController(mockFormContent.fields);
 
-    const caseData = {
-      accessCode: 'QWERTY78',
-      caseReference: '1234123412341234',
-      applicationType: ApplicationType.SOLE_APPLICATION,
-    };
-
-    const req = mockRequest({ body });
-    (getCaseApiMock as jest.Mock).mockReturnValue({
+    const caseApiMockFn = {
       triggerEvent: jest.fn(() => {
         return {
+          accessCode: 'QWERTY78',
+          id: '1234123412341234',
+          applicationType: ApplicationType.SOLE_APPLICATION,
+        };
+      }),
+      getCaseById: jest.fn(() => {
+        return {
+          accessCode: 'QWERTY78',
+          id: '1234123412341234',
+          applicationType: ApplicationType.SOLE_APPLICATION,
+        };
+      }),
+      unlinkStaleDraftCaseIfFound: jest.fn(() => {
+        return undefined;
+      }),
+    };
+    (getCaseApiMock as jest.Mock).mockReturnValue(caseApiMockFn);
+
+    const req = mockRequest({ body });
+    req.session.userCase.applicationType = ApplicationType.SOLE_APPLICATION;
+    const res = mockResponse();
+    await controller.post(req, res);
+
+    expect(caseApiMockFn.triggerEvent).toHaveBeenCalledWith(
+      '1234123412341234',
+      {
+        accessCode: 'QWERTY78',
+        caseReference: '1234123412341234',
+        applicant2Email: 'test@example.com',
+        respondentUserId: '123456',
+      },
+      SYSTEM_LINK_APPLICANT_2
+    );
+    expect(res.redirect).toHaveBeenCalledWith(`${RESPONDENT}${HUB_PAGE}`);
+    expect(req.session.errors).toStrictEqual([]);
+    expect(req.session.existingCaseId).toStrictEqual('1234123412341234');
+  });
+
+  test('Assert access code with whitespaces and lowercase characters is valid', async () => {
+    const body = { accessCode: '  Qwer TY 78  ', caseReference: '1234123412341234' };
+    const controller = new AccessCodePostController(mockFormContent.fields);
+
+    const caseApiMockFn = {
+      triggerEvent: jest.fn(() => {
+        return {
+          accessCode: '  Qwer TY 78  ',
+          caseReference: '1234123412341234',
           applicationType: ApplicationType.SOLE_APPLICATION,
         };
       }),
@@ -101,24 +144,28 @@ describe('AccessCodePostController', () => {
           applicationType: ApplicationType.SOLE_APPLICATION,
         };
       }),
-    });
+      unlinkStaleDraftCaseIfFound: jest.fn(() => {
+        return undefined;
+      }),
+    };
+    (getCaseApiMock as jest.Mock).mockReturnValue(caseApiMockFn);
+
+    const req = mockRequest({ body });
     req.session.userCase.applicationType = ApplicationType.SOLE_APPLICATION;
-    (req.locals.api.triggerEvent as jest.Mock).mockResolvedValueOnce(caseData);
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith(
+    expect(caseApiMockFn.triggerEvent).toHaveBeenCalledWith(
       '1234123412341234',
       {
-        accessCode: 'QWERTY78',
+        accessCode: '  Qwer TY 78  ',
         caseReference: '1234123412341234',
-        applicant2FirstNames: 'First name',
-        applicant2LastNames: 'Last name',
+        applicant2Email: 'test@example.com',
         respondentUserId: '123456',
       },
       SYSTEM_LINK_APPLICANT_2
     );
-    expect(res.redirect).toBeCalledWith(`${RESPONDENT}${HUB_PAGE}`);
+    expect(res.redirect).toHaveBeenCalledWith(`${RESPONDENT}${HUB_PAGE}`);
     expect(req.session.errors).toStrictEqual([]);
   });
 
@@ -136,17 +183,21 @@ describe('AccessCodePostController', () => {
           applicationType: ApplicationType.JOINT_APPLICATION,
         };
       }),
+      unlinkStaleDraftCaseIfFound: jest.fn(() => {
+        return undefined;
+      }),
     });
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(res.redirect).toBeCalledWith('/request');
+    expect(res.redirect).toHaveBeenCalledWith('/request');
     expect(req.session.errors).toStrictEqual([
       {
         errorType: 'invalidAccessCode',
         propertyName: 'accessCode',
       },
     ]);
+    expect(req.locals.logger.error).toHaveBeenCalled();
   });
 
   test('Should return error when case reference is invalid and should redirect to the same page', async () => {
@@ -159,11 +210,14 @@ describe('AccessCodePostController', () => {
       getCaseById: jest.fn(() => {
         throw Error;
       }),
+      unlinkStaleDraftCaseIfFound: jest.fn(() => {
+        return undefined;
+      }),
     });
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(res.redirect).toBeCalledWith('/request');
+    expect(res.redirect).toHaveBeenCalledWith('/request');
     expect(req.session.errors).toStrictEqual([
       {
         errorType: 'invalidReference',
@@ -188,11 +242,14 @@ describe('AccessCodePostController', () => {
           applicationType: ApplicationType.JOINT_APPLICATION,
         };
       }),
+      unlinkStaleDraftCaseIfFound: jest.fn(() => {
+        return undefined;
+      }),
     });
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(res.redirect).toBeCalledWith('/request');
+    expect(res.redirect).toHaveBeenCalledWith('/request');
     expect(req.session.errors).toStrictEqual([
       {
         errorType: 'errorSaving',

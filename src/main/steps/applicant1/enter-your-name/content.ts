@@ -8,7 +8,7 @@ const en = () => {
     title: 'Enter your name',
     line1: 'The court needs to know your full name.',
     firstNames: 'Your first name(s)',
-    middleNames: 'Your middle name(s)',
+    middleNames: 'Your middle name(s) (if you have one)',
     lastNames: 'Your last name(s)',
     errors: {
       applicant1FirstNames: {
@@ -26,8 +26,29 @@ const en = () => {
   };
 };
 
-// @TODO translations
-const cy = en;
+const cy: typeof en = () => {
+  const invalid = 'Rydych wedi teipio nod annilys, fel rhif. Nodwch eich enw gan ddefnyddio llythrennau yn unig.';
+  return {
+    title: 'Nodwch eich enw',
+    line1: 'Mae’r llys angen gwybod eich enw llawn.',
+    firstNames: 'Eich enw(au) cyntaf',
+    middleNames: 'Eich enw(au) canol (os oes gennych un)',
+    lastNames: 'Eich cyfenw(au)',
+    errors: {
+      applicant1FirstNames: {
+        required: 'Nid ydych wedi nodi’ch enw cyntaf. Nodwch ef cyn parhau.',
+        invalid,
+      },
+      applicant1MiddleNames: {
+        invalid,
+      },
+      applicant1LastNames: {
+        required: 'Nid ydych wedi nodi’ch cyfenw. Nodwch ef cyn parhau.',
+        invalid,
+      },
+    },
+  };
+};
 
 export const form: FormContent = {
   fields: {
@@ -36,6 +57,7 @@ export const form: FormContent = {
       label: l => l.firstNames,
       labelSize: 'normal',
       classes: 'govuk-input--width-20',
+      autocomplete: 'given-name',
       validator: input => isFieldFilledIn(input) || isFieldLetters(input),
     },
     applicant1MiddleNames: {
@@ -43,6 +65,7 @@ export const form: FormContent = {
       label: l => l.middleNames,
       labelSize: 'normal',
       classes: 'govuk-input--width-20',
+      autocomplete: 'middle-name',
       validator: isFieldLetters,
     },
     applicant1LastNames: {
@@ -50,6 +73,7 @@ export const form: FormContent = {
       label: l => l.lastNames,
       labelSize: 'normal',
       classes: 'govuk-input--width-20',
+      autocomplete: 'last-name',
       validator: input => isFieldFilledIn(input) || isFieldLetters(input),
     },
   },

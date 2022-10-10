@@ -4,12 +4,7 @@
 {% extends "common/page.njk" %}
 
 {% set nextIncompleteStep = getNextIncompleteStepUrl() %}
-{% set isApplicationReadyToSubmit =
-        '/check-your-answers' in nextIncompleteStep or
-        nextIncompleteStep === '/' or
-        nextIncompleteStep.startsWith('/pay') or
-        nextIncompleteStep.startsWith('/application-submitted')
-%}
+{% set isApplicationReadyToSubmit = isApplicationReadyToSubmit(nextIncompleteStep) %}
 {% set title = titleSubmit if isApplicationReadyToSubmit else titleSoFar %}
 
 {% block backLink %}{% endblock %}
@@ -20,15 +15,39 @@
   {% endblock %}
 
   <h1 class="govuk-heading-xl">{{ title }}</h1>
+  <p class='govuk-body'>{{ line1 }}</p>
 
-  {% for key, section in sections %}
-    {% set rows = getAnswerRows(section) %}
-    {% if rows | length %}
-      <h2 class="govuk-heading-m">{{ sectionTitles[section] }}</h2>
+  {% for section, title in sectionTitles %}
+    {% set answerRows = [] %}
+      {% for line, text in stepAnswers[section] %}
+        {% if text and text != 'undefined' and text != 'null' %}
 
+          {% set answerRows = (answerRows.push({
+            key: {
+              html: stepQuestions[section][line],
+              classes: 'govuk-!-width-two-thirds'
+            },
+            value: {
+              text: text | safe
+            },
+            actions: {
+              items: [
+                {
+                  href: applicant2Url + stepLinks[section][line],
+                  text: change,
+                  visuallyHiddenText: stepQuestions[section][line]
+                }
+              ]
+            }
+          }), answerRows) %}
+        {% endif %}
+      {% endfor %}
+
+    {% if answerRows.length %}
+      <h2 class="govuk-heading-m">{{sectionTitles[section]}}</h2>
       {{ govukSummaryList({
         classes: 'govuk-!-margin-bottom-9',
-        rows: rows
+        rows: answerRows
       }) }}
     {% endif %}
   {% endfor %}
@@ -51,5 +70,5 @@
     }) }}
   {% endif %}
 
-  {% include "common/contact-us.njk" %}
+  {% include "common/contact-us/details.njk" %}
 {% endblock %}

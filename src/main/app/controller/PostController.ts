@@ -4,13 +4,7 @@ import { Response } from 'express';
 import { getNextStepUrl } from '../../steps';
 import { SAVE_AND_SIGN_OUT } from '../../steps/urls';
 import { Case, CaseWithId } from '../case/case';
-import {
-  ApplicationType,
-  CITIZEN_APPLICANT2_UPDATE,
-  CITIZEN_SAVE_AND_CLOSE,
-  CITIZEN_UPDATE,
-  UPDATE_AOS,
-} from '../case/definition';
+import { CITIZEN_APPLICANT2_UPDATE, CITIZEN_SAVE_AND_CLOSE, CITIZEN_UPDATE } from '../case/definition';
 import { Form, FormFields, FormFieldsFn } from '../form/Form';
 
 import { AppRequest } from './AppRequest';
@@ -28,16 +22,23 @@ export class PostController<T extends AnyObject> {
 
     const { saveAndSignOut, saveBeforeSessionTimeout, _csrf, ...formData } = form.getParsedBody(req.body);
 
-    if (req.body.saveAndSignOut) {
-      await this.saveAndSignOut(req, res, formData);
-    } else if (req.body.saveBeforeSessionTimeout) {
-      await this.saveBeforeSessionTimeout(req, res, formData);
+    if (req.body.saveAndSignOut || req.body.saveBeforeSessionTimeout) {
+      await this.saveAndSignOut(req, res, form, formData);
     } else {
       await this.saveAndContinue(req, res, form, formData);
     }
   }
 
-  private async saveAndSignOut(req: AppRequest<T>, res: Response, formData: Partial<Case>): Promise<void> {
+  protected async saveAndSignOut(
+    req: AppRequest<T>,
+    res: Response,
+    form: Form,
+    formData: Partial<Case>
+  ): Promise<void> {
+    Object.assign(req.session.userCase, formData);
+    req.session.errors = form.getErrors(formData);
+
+    formData = req.session.errors.length === 0 ? formData : {};
     try {
       await this.save(req, formData, CITIZEN_SAVE_AND_CLOSE);
     } catch {
@@ -46,16 +47,12 @@ export class PostController<T extends AnyObject> {
     res.redirect(SAVE_AND_SIGN_OUT);
   }
 
-  private async saveBeforeSessionTimeout(req: AppRequest<T>, res: Response, formData: Partial<Case>): Promise<void> {
-    try {
-      await this.save(req, formData, this.getEventName(req));
-    } catch {
-      // ignore
-    }
-    res.end();
-  }
-
-  private async saveAndContinue(req: AppRequest<T>, res: Response, form: Form, formData: Partial<Case>): Promise<void> {
+  protected async saveAndContinue(
+    req: AppRequest<T>,
+    res: Response,
+    form: Form,
+    formData: Partial<Case>
+  ): Promise<void> {
     Object.assign(req.session.userCase, formData);
     req.session.errors = form.getErrors(formData);
 
@@ -83,9 +80,7 @@ export class PostController<T extends AnyObject> {
   }
 
   protected getEventName(req: AppRequest<T>): string {
-    if (req.session.userCase.applicationType === ApplicationType.SOLE_APPLICATION && req.session.isApplicant2) {
-      return UPDATE_AOS;
-    } else if (req.session.isApplicant2) {
+    if (req.session.isApplicant2) {
       return CITIZEN_APPLICANT2_UPDATE;
     } else {
       return CITIZEN_UPDATE;

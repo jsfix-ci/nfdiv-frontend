@@ -1,9 +1,11 @@
 import { Checkbox, LanguagePreference } from '../../../main/app/case/case';
 import {
+  Applicant2Represented,
   ApplicationType,
   DivorceOrDissolution,
   DocumentType,
   Gender,
+  JurisdictionConnections,
   YesOrNo,
 } from '../../../main/app/case/definition';
 import { BrowserCase } from '../../steps/common';
@@ -43,7 +45,8 @@ export const completeCase: Partial<BrowserCase> = {
   applicant2LifeBasedInEnglandAndWales: YesOrNo.YES,
   applicant2MiddleNames: '',
   applicationType: ApplicationType.SOLE_APPLICATION,
-  applyForFinancialOrder: YesOrNo.NO,
+  applicant1ApplyForFinancialOrder: YesOrNo.NO,
+  applicant1WhoIsFinancialOrderFor: [],
   applicant1CannotUpload: Checkbox.Checked,
   applicant1CannotUploadDocuments: [DocumentType.MARRIAGE_CERTIFICATE],
   divorceOrDissolution: DivorceOrDissolution.DIVORCE,
@@ -51,14 +54,16 @@ export const completeCase: Partial<BrowserCase> = {
   applicant2EnglishOrWelsh: LanguagePreference.English,
   gender: Gender.MALE,
   hasCertificate: YesOrNo.YES,
-  applicant1IBelieveApplicationIsTrue: Checkbox.Checked,
-  applicant1IConfirmPrayer: Checkbox.Checked,
   inTheUk: YesOrNo.YES,
   applicant1LegalProceedings: YesOrNo.NO,
-  'relationshipDate-day': 31,
-  'relationshipDate-month': 12,
-  'relationshipDate-year': 1999,
+  relationshipDate: {
+    day: '31',
+    month: '12',
+    year: '1999',
+  },
   sameSex: Checkbox.Unchecked,
   applicant1ScreenHasUnionBroken: YesOrNo.YES,
   applicant1UploadedFiles: [],
+  connections: [JurisdictionConnections.APP_1_APP_2_RESIDENT],
+  applicant1IsApplicant2Represented: Applicant2Represented.NO,
 };

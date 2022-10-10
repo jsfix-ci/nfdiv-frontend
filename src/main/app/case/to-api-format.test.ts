@@ -1,16 +1,41 @@
 import { Case, Checkbox, LanguagePreference } from './case';
-import { ChangedNameHow, DivorceOrDissolution, Gender, ThePrayer, YesOrNo } from './definition';
+import {
+  Applicant2Represented,
+  ApplicationType,
+  ChangedNameHow,
+  ContactDetailsType,
+  DivorceOrDissolution,
+  DocumentType,
+  EndCivilPartnership,
+  FinancialOrderFor,
+  Gender,
+  HowToRespondApplication,
+  MarriageFormation,
+  YesOrNo,
+} from './definition';
 import { OrNull, toApiFormat } from './to-api-format';
 
 describe('to-api-format', () => {
   const results: OrNull<Partial<Case>> = {
     gender: Gender.MALE,
+    applicationType: ApplicationType.SOLE_APPLICATION,
     sameSex: Checkbox.Checked,
     relationshipDate: { year: '1900', month: '1', day: '4' },
     applicant1HelpPayingNeeded: YesOrNo.YES,
     applicant1AlreadyAppliedForHelpPaying: YesOrNo.YES,
     applicant1HelpWithFeesRefNo: 'HWF-123-ABC',
     applicant2HelpPayingNeeded: YesOrNo.YES,
+    applicant2SolicitorName: 'Solicitor Name',
+    applicant2SolicitorEmail: 'solicitor@email.com',
+    applicant2SolicitorFirmName: 'Solicitor Firm Name',
+    applicant2SolicitorAddress1: 'Address 1',
+    applicant2SolicitorAddress2: 'Address 2',
+    applicant2SolicitorAddress3: 'Address 3',
+    applicant2SolicitorAddressTown: 'Address Town',
+    applicant2SolicitorAddressCounty: 'Address County',
+    applicant2SolicitorAddressPostcode: 'Address Postcode',
+    applicant2SolicitorAddressCountry: 'Address Country',
+    applicant1IsApplicant2Represented: Applicant2Represented.NO,
     applicant2AlreadyAppliedForHelpPaying: YesOrNo.YES,
     applicant2HelpWithFeesRefNo: 'HWF-123-CBA',
     applicant1AgreeToReceiveEmails: Checkbox.Checked,
@@ -29,17 +54,69 @@ describe('to-api-format', () => {
     applicant2CannotUploadDocuments: [],
     applicant1IConfirmPrayer: Checkbox.Checked,
     applicant2IConfirmPrayer: Checkbox.Checked,
-    applicant1IBelieveApplicationIsTrue: Checkbox.Checked,
-    applicant2IBelieveApplicationIsTrue: Checkbox.Checked,
+    applicant1StatementOfTruth: Checkbox.Checked,
+    applicant2StatementOfTruth: Checkbox.Checked,
+    aosStatementOfTruth: Checkbox.Checked,
+    applicant1FinalOrderStatementOfTruth: Checkbox.Checked,
+    doesApplicant1WantToApplyForFinalOrder: Checkbox.Checked,
+    doesApplicant2WantToApplyForFinalOrder: Checkbox.Checked,
+    applicant2AgreeToReceiveEmails: Checkbox.Checked,
+    applicant1UploadedFiles: [],
+    applicant2UploadedFiles: [],
+    confirmReadPetition: Checkbox.Checked,
+    applicant1LegalProceedingsDetails: 'Test',
+    applicant2LegalProceedingsDetails: 'Test',
+    applicant1LegalProceedings: YesOrNo.NO,
+    applicant2LegalProceedings: YesOrNo.NO,
+    disputeApplication: YesOrNo.YES,
+    coApplicant1StatementOfTruth: Checkbox.Checked,
+    coApplicant2StatementOfTruth: Checkbox.Checked,
+    coCannotUploadClarificationDocuments: Checkbox.Checked,
+    coClarificationResponses: 'test',
+  };
+
+  const resultsWithSecondaryValues: OrNull<Partial<Case>> = {
+    applicant1DoesNotKnowApplicant2EmailAddress: Checkbox.Unchecked,
+    applicant1IConfirmPrayer: Checkbox.Unchecked,
+    applicant2IConfirmPrayer: Checkbox.Unchecked,
+    applicant1AddressPrivate: YesOrNo.NO,
+    applicant2AddressPrivate: YesOrNo.NO,
+    disputeApplication: YesOrNo.NO,
+    applicant1EnglishOrWelsh: LanguagePreference.Welsh,
+    applicant2AlreadyAppliedForHelpPaying: YesOrNo.YES,
+    applicant2HelpWithFeesRefNo: '12345',
+    applicant2HelpPayingNeeded: YesOrNo.NO,
+    applicant2SolicitorName: 'Solicitor Name',
+    applicant2SolicitorEmail: 'solicitor@email.com',
+    applicant2SolicitorFirmName: 'Solicitor Firm Name',
+    applicant2SolicitorAddress1: 'Address 1',
+    applicant2SolicitorAddress2: 'Address 2',
+    applicant2SolicitorAddress3: 'Address 3',
+    applicant2SolicitorAddressTown: 'Address Town',
+    applicant2SolicitorAddressCounty: 'Address County',
+    applicant2SolicitorAddressPostcode: 'Address Postcode',
+    applicant2SolicitorAddressCountry: 'Address Country',
+    applicant1IsApplicant2Represented: Applicant2Represented.YES,
+    applicant1NameChangedHow: [],
+    applicant2NameChangedHow: [],
+    applicant1ChangedNameHowAnotherWay: 'Test',
+    applicant2ChangedNameHowAnotherWay: 'Test',
+    applicant1CannotUploadDocuments: DocumentType.NAME_CHANGE_EVIDENCE,
+    applicant2CannotUploadDocuments: DocumentType.NAME_CHANGE_EVIDENCE,
+    applicant1ApplyForFinancialOrder: YesOrNo.YES,
+    applicant1WhoIsFinancialOrderFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+    applicant2ApplyForFinancialOrder: YesOrNo.NO,
+    applicant2WhoIsFinancialOrderFor: [],
   };
 
   test('Should convert results from nfdiv to api fe format', async () => {
     const apiFormat = toApiFormat(results as Partial<Case>);
 
     expect(apiFormat).toStrictEqual({
-      marriageIsSameSexCouple: YesOrNo.YES,
+      marriageFormationType: MarriageFormation.SAME_SEX_COUPLE,
       applicant2Gender: Gender.MALE,
       applicant1Gender: Gender.MALE,
+      applicationType: ApplicationType.SOLE_APPLICATION,
       marriageDate: '1900-01-04',
       applicant1HWFNeedHelp: YesOrNo.YES,
       applicant1HWFAppliedForFees: YesOrNo.YES,
@@ -47,25 +124,39 @@ describe('to-api-format', () => {
       applicant2HWFNeedHelp: YesOrNo.YES,
       applicant2HWFAppliedForFees: YesOrNo.YES,
       applicant2HWFReferenceNumber: 'HWF-123-CBA',
+      applicant2SolicitorAddress: null,
+      applicant2SolicitorEmail: null,
+      applicant2SolicitorFirmName: null,
+      applicant2SolicitorName: null,
+      applicant1IsApplicant2Represented: Applicant2Represented.NO,
       applicant1AgreedToReceiveEmails: YesOrNo.YES,
-      applicant1KeepContactDetailsConfidential: YesOrNo.YES,
+      applicant1ContactDetailsType: ContactDetailsType.PRIVATE,
       applicant1KnowsApplicant2Address: YesOrNo.NO,
       applicant1KnowsApplicant2EmailAddress: YesOrNo.NO,
       applicant1WantsToHavePapersServedAnotherWay: null,
       applicant1LanguagePreferenceWelsh: 'No',
       applicant2LanguagePreferenceWelsh: 'No',
-      applicant2KeepContactDetailsConfidential: YesOrNo.YES,
+      applicant2ContactDetailsType: ContactDetailsType.PRIVATE,
       applicant1CannotUploadSupportingDocument: [],
+      applicant1CannotUpload: 'No',
       applicant2CannotUploadSupportingDocument: [],
-      applicant1PrayerHasBeenGivenCheckbox: [ThePrayer.I_CONFIRM],
-      applicant2PrayerHasBeenGiven: 'Yes',
+      applicant2CannotUpload: 'No',
+      applicant1PrayerDissolveDivorce: [],
+      applicant1PrayerEndCivilPartnership: [EndCivilPartnership.END_CIVIL_PARTNERSHIP],
+      applicant1PrayerFinancialOrdersChild: [],
+      applicant1PrayerFinancialOrdersThemselves: [],
+      applicant2PrayerDissolveDivorce: [],
+      applicant2PrayerEndCivilPartnership: [EndCivilPartnership.END_CIVIL_PARTNERSHIP],
+      applicant2PrayerFinancialOrdersChild: [],
+      applicant2PrayerFinancialOrdersThemselves: [],
       applicant1StatementOfTruth: 'Yes',
       applicant2StatementOfTruth: 'Yes',
+      statementOfTruth: 'Yes',
       applicant1NameChangedHow: [ChangedNameHow.OTHER],
       applicant2NameChangedHow: [ChangedNameHow.OTHER],
       applicant1NameChangedHowOtherDetails: 'Test',
       applicant2NameChangedHowOtherDetails: 'Test',
-      applicant2HomeAddress: {
+      applicant2Address: {
         AddressLine1: null,
         AddressLine2: null,
         AddressLine3: null,
@@ -74,6 +165,61 @@ describe('to-api-format', () => {
         PostCode: null,
         Country: null,
       },
+      applicant1FinalOrderStatementOfTruth: YesOrNo.YES,
+      doesApplicant1WantToApplyForFinalOrder: YesOrNo.YES,
+      doesApplicant2WantToApplyForFinalOrder: YesOrNo.YES,
+      applicant2AgreedToReceiveEmails: YesOrNo.YES,
+      confirmReadPetition: YesOrNo.YES,
+      applicant1LegalProceedings: YesOrNo.NO,
+      applicant1LegalProceedingsDetails: null,
+      applicant2LegalProceedings: YesOrNo.NO,
+      applicant2LegalProceedingsDetails: null,
+      howToRespondApplication: HowToRespondApplication.DISPUTE_DIVORCE,
+      coApplicant1StatementOfTruth: YesOrNo.YES,
+      coApplicant2StatementOfTruth: YesOrNo.YES,
+      coClarificationResponses: [{ id: '1', value: 'test' }],
+      coCannotUploadClarificationDocuments: YesOrNo.YES,
+    });
+  });
+
+  test('Should convert results from nfdiv to api fe format with secondary values', async () => {
+    const apiFormat = toApiFormat(resultsWithSecondaryValues as Partial<Case>);
+
+    expect(apiFormat).toStrictEqual({
+      applicant1ContactDetailsType: ContactDetailsType.PUBLIC,
+      applicant1KnowsApplicant2EmailAddress: YesOrNo.YES,
+      applicant2ContactDetailsType: ContactDetailsType.PUBLIC,
+      applicant1PrayerDissolveDivorce: [],
+      applicant1PrayerEndCivilPartnership: [],
+      applicant1PrayerFinancialOrdersChild: [],
+      applicant1PrayerFinancialOrdersThemselves: [],
+      applicant2PrayerDissolveDivorce: [],
+      applicant2PrayerEndCivilPartnership: [],
+      applicant2PrayerFinancialOrdersChild: [],
+      applicant2PrayerFinancialOrdersThemselves: [],
+      howToRespondApplication: HowToRespondApplication.WITHOUT_DISPUTE_DIVORCE,
+      applicant1LanguagePreferenceWelsh: 'Yes',
+      applicant2HWFNeedHelp: YesOrNo.NO,
+      applicant2HWFAppliedForFees: null,
+      applicant2HWFReferenceNumber: null,
+      applicant1IsApplicant2Represented: Applicant2Represented.YES,
+      applicant2SolicitorName: 'Solicitor Name',
+      applicant2SolicitorEmail: 'solicitor@email.com',
+      applicant2SolicitorFirmName: 'Solicitor Firm Name',
+      applicant2SolicitorAddress:
+        'Address 1\nAddress 2\nAddress 3\nAddress Town\nAddress County\nAddress Postcode\nAddress Country',
+      applicant1NameChangedHowOtherDetails: '',
+      applicant2NameChangedHowOtherDetails: '',
+      applicant1NameChangedHow: [],
+      applicant2NameChangedHow: [],
+      applicant1CannotUploadSupportingDocument: [DocumentType.NAME_CHANGE_EVIDENCE],
+      applicant1CannotUpload: YesOrNo.YES,
+      applicant2CannotUploadSupportingDocument: [DocumentType.NAME_CHANGE_EVIDENCE],
+      applicant2CannotUpload: YesOrNo.YES,
+      applicant1FinancialOrder: YesOrNo.YES,
+      applicant1FinancialOrdersFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+      applicant2FinancialOrder: YesOrNo.NO,
+      applicant2FinancialOrdersFor: [],
     });
   });
 
@@ -148,7 +294,7 @@ describe('to-api-format', () => {
     } as unknown as Partial<Case>);
 
     expect(apiFormat).toMatchObject({
-      applicant1HomeAddress: {
+      applicant1Address: {
         AddressLine1: 'Line 1',
         AddressLine2: 'Line 2',
         AddressLine3: '',
@@ -215,10 +361,22 @@ describe('to-api-format', () => {
       },
     },
     {
+      applicationType: ApplicationType.JOINT_APPLICATION,
+      expected: {
+        applicationType: ApplicationType.JOINT_APPLICATION,
+        applicant1IsApplicant2Represented: null,
+        applicant2SolicitorRepresented: null,
+        applicant2SolicitorName: null,
+        applicant2SolicitorEmail: null,
+        applicant2SolicitorFirmName: null,
+        applicant2SolicitorAddress: null,
+      },
+    },
+    {
       applicant1KnowsApplicant2Address: YesOrNo.NO,
       expected: {
         applicant1KnowsApplicant2Address: YesOrNo.NO,
-        applicant2HomeAddress: {
+        applicant2Address: {
           AddressLine1: null,
           AddressLine2: null,
           AddressLine3: null,
@@ -236,6 +394,14 @@ describe('to-api-format', () => {
       },
     },
     {
+      certifiedTranslation: YesOrNo.YES,
+      certificateInEnglish: YesOrNo.YES,
+      expected: {
+        marriageCertificateInEnglish: YesOrNo.YES,
+        marriageCertifiedTranslation: null,
+      },
+    },
+    {
       certificateInEnglish: YesOrNo.NO,
       certifiedTranslation: YesOrNo.YES,
       ceremonyCountry: 'Northern Ireland',
@@ -249,6 +415,75 @@ describe('to-api-format', () => {
       },
     },
   ])('set unreachable answers to null if condition met', ({ expected, ...formData }) => {
+    expect(toApiFormat(formData as Partial<Case>)).toMatchObject(expected);
+  });
+
+  test.each([
+    {
+      applicant1ApplyForFinancialOrder: YesOrNo.YES,
+      applicant1WhoIsFinancialOrderFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+      applicant2ApplyForFinancialOrder: YesOrNo.YES,
+      applicant2WhoIsFinancialOrderFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+      expected: {
+        applicant1FinancialOrder: YesOrNo.YES,
+        applicant1FinancialOrdersFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+        applicant2FinancialOrder: YesOrNo.YES,
+        applicant2FinancialOrdersFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+      },
+    },
+    {
+      applicant1ApplyForFinancialOrder: YesOrNo.NO,
+      applicant1WhoIsFinancialOrderFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+      applicant2ApplyForFinancialOrder: YesOrNo.NO,
+      applicant2WhoIsFinancialOrderFor: [FinancialOrderFor.APPLICANT, FinancialOrderFor.CHILDREN],
+      expected: {
+        applicant1FinancialOrder: YesOrNo.NO,
+        applicant1FinancialOrdersFor: [],
+        applicant2FinancialOrder: YesOrNo.NO,
+        applicant2FinancialOrdersFor: [],
+      },
+    },
+  ])('sets correct subfields of financial order', ({ expected, ...formData }) => {
+    expect(toApiFormat(formData as Partial<Case>)).toMatchObject(expected);
+  });
+
+  test('sets coClarificationResponses to empty array if no response was entered', async () => {
+    const apiFormat = toApiFormat({
+      coClarificationResponses: '',
+    } as Partial<Case>);
+
+    expect(apiFormat).toMatchObject({
+      coClarificationResponses: [],
+    });
+  });
+
+  test.each([
+    {
+      applicant2SolicitorAddress1: 'testLine1',
+      applicant2SolicitorAddress2: 'testLine2',
+      applicant2SolicitorAddress3: 'testLine3',
+      applicant2SolicitorAddressTown: 'testLineTown',
+      applicant2SolicitorAddressCounty: 'testLineCounty',
+      applicant2SolicitorAddressPostcode: 'testLinePostcode',
+      applicant2SolicitorAddressCountry: 'testLineCountry',
+      expected: {
+        applicant2SolicitorAddress:
+          'testLine1\ntestLine2\ntestLine3\ntestLineTown\ntestLineCounty\ntestLinePostcode\ntestLineCountry',
+      },
+    },
+    {
+      applicant2SolicitorAddress1: '',
+      applicant2SolicitorAddress2: '',
+      applicant2SolicitorAddress3: '',
+      applicant2SolicitorAddressTown: '',
+      applicant2SolicitorAddressCounty: '',
+      applicant2SolicitorAddressPostcode: 'testLinePostcode',
+      applicant2SolicitorAddressCountry: '',
+      expected: {
+        applicant2SolicitorAddress: '\n\n\n\n\ntestLinePostcode\n',
+      },
+    },
+  ])('sets correct solicitors address depending on the fields entered', ({ expected, ...formData }) => {
     expect(toApiFormat(formData as Partial<Case>)).toMatchObject(expected);
   });
 });

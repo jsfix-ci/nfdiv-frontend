@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid';
 
 import { CITIZEN_UPDATE } from '../../../app/case/definition';
 import { AppRequest } from '../../../app/controller/AppRequest';
+import { SupportedLanguages } from '../../../modules/i18n';
 import { CHECK_ANSWERS_URL } from '../../urls';
 
 import { createToken } from './createToken';
@@ -16,8 +17,10 @@ const logger = Logger.getLogger('PCQGetController');
 @autobind
 export default class PCQGetController {
   public async get(req: AppRequest, res: Response): Promise<void> {
-    if (!req.session.userCase.applicant1PcqId) {
-      const url = config.get('services.equalityAndDiversity.url');
+    const tokenKey: string = config.get('services.equalityAndDiversity.tokenKey');
+    const url = config.get('services.equalityAndDiversity.url');
+
+    if (!req.session.userCase.applicant1PcqId && tokenKey && url) {
       const path: string = config.get('services.equalityAndDiversity.path');
       const health = `${url}/health`;
 
@@ -42,10 +45,11 @@ export default class PCQGetController {
         pcqId: req.session.userCase.applicant1PcqId,
         partyId: req.session.user.email,
         returnUrl: `${protocol}${res.locals.host}${port}${CHECK_ANSWERS_URL}`,
-        language: req.session.lang || 'en',
+        language: req.session.lang || SupportedLanguages.En,
+        ccdCaseId: req.session.userCase.id,
       };
 
-      params['token'] = createToken(params);
+      params['token'] = createToken(params, tokenKey);
       params.partyId = encodeURIComponent(params.partyId);
 
       try {

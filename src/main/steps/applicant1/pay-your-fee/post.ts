@@ -2,7 +2,7 @@ import autobind from 'autobind-decorator';
 import config from 'config';
 import { Response } from 'express';
 
-import { CITIZEN_SUBMIT, PaymentStatus, State } from '../../../app/case/definition';
+import { CITIZEN_ADD_PAYMENT, CITIZEN_SUBMIT, PaymentStatus, State } from '../../../app/case/definition';
 import { AppRequest } from '../../../app/controller/AppRequest';
 import { AnyObject } from '../../../app/controller/PostController';
 import { PaymentClient } from '../../../app/payment/PaymentClient';
@@ -12,9 +12,10 @@ import { PAYMENT_CALLBACK_URL, SAVE_AND_SIGN_OUT } from '../../urls';
 @autobind
 export default class PaymentPostController {
   public async post(req: AppRequest<AnyObject>, res: Response): Promise<void> {
-    if (req.body.saveAndSignOut) {
+    if (req.body.saveAndSignOut || req.body.saveBeforeSessionTimeout) {
       return res.redirect(SAVE_AND_SIGN_OUT);
     }
+
     if (req.session.userCase.state !== State.AwaitingPayment) {
       req.session.userCase = await req.locals.api.triggerEvent(req.session.userCase.id, {}, CITIZEN_SUBMIT);
     }
@@ -40,7 +41,11 @@ export default class PaymentPostController {
       transactionId: payment.external_reference,
     });
 
-    req.session.userCase = await req.locals.api.addPayment(req.session.userCase.id, payments.list);
+    req.session.userCase = await req.locals.api.triggerPaymentEvent(
+      req.session.userCase.id,
+      payments.list,
+      CITIZEN_ADD_PAYMENT
+    );
 
     this.saveAndRedirect(req, res, payment._links.next_url.href);
   }

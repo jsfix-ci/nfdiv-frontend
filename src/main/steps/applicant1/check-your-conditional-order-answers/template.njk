@@ -1,0 +1,72 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% extends "common/page.njk" %}
+
+
+{% if applicantApplyForConditionalOrder === 'No' %}
+  {% set isConditionalOrderReadyToSubmit = false %}
+  {% set nextIncompleteStep = "/applicant2/continue-with-your-application" if isApplicant2 else "/continue-with-your-application" %}
+{% else %}
+  {% set nextIncompleteStep = getNextIncompleteStepUrl() %}
+  {% set isConditionalOrderReadyToSubmit = isConditionalOrderReadyToSubmit(nextIncompleteStep) %}
+{% endif %}
+
+{% set title = title if isConditionalOrderReadyToSubmit else titleSoFar %}
+
+{% block content %}
+  {% block error_summary %}
+    {% include "common/error/summary.njk" %}
+  {% endblock %}
+
+  <h1 class="govuk-heading-xl">{{ title }}</h1>
+
+  {% set answerRows = [] %}
+  {% for question, text in stepQuestions %}
+    {% if stepAnswers[question] and stepAnswers[question] != 'undefined' and stepAnswers[question] != 'null' %}
+      {% set answerRows = (answerRows.push({
+        key: {
+          html: text,
+          classes: 'govuk-!-width-two-thirds'
+        },
+        value: {
+          text: stepAnswers[question]
+        },
+        actions: {
+          items: [
+            {
+              href: stepLinks[question],
+              text: change,
+              visuallyHiddenText: text
+            }
+          ]
+        }
+      }), answerRows) %}
+    {% endif %}
+  {% endfor %}
+
+  {% if answerRows.length %}
+    {{ govukSummaryList({
+      classes: 'govuk-!-margin-bottom-9',
+      rows: answerRows
+    }) }}
+  {% endif %}
+
+  {% if isConditionalOrderReadyToSubmit %}
+    {% block form %}
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          {% include "./form.njk" %}
+        </div>
+      </div>
+    {% endblock %}
+  {% else %}
+    {{ govukButton({
+      text: continueApplication,
+      href: nextIncompleteStep,
+      preventDoubleClick: true
+    }) }}
+  {% endif %}
+
+  {% include "common/contact-us/details.njk" %}
+{% endblock %}

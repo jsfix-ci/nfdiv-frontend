@@ -7,7 +7,7 @@ if (!process.env.TEST_PASSWORD) {
 
 import sysConfig from 'config';
 import { getTokenFromApi } from '../main/app/auth/service/get-service-auth-token';
-import { YOUR_DETAILS_URL } from '../main/steps/urls';
+import { APPLICANT_2, ENTER_YOUR_ACCESS_CODE, HOME_URL, YOUR_DETAILS_URL } from '../main/steps/urls';
 
 import { IdamUserManager } from './steps/IdamUserManager';
 
@@ -22,19 +22,47 @@ const generateTestUsername = () => `nfdiv.frontend.test.${new Date().getTime()}.
 const TestUser = generateTestUsername();
 const TestPass = process.env.TEST_PASSWORD || sysConfig.get('e2e.userTestPassword') || '';
 const idamUserManager = new IdamUserManager(sysConfig.get('services.idam.tokenURL'));
+const LOGIN_TIMEOUT = 60;
 
 export const autoLogin = {
-  login: (I: CodeceptJS.I, username = TestUser, password = TestPass): void => {
-    I.amOnPage(`${YOUR_DETAILS_URL}?lng=en`);
+  login: (I: CodeceptJS.I, username = TestUser, password = TestPass, createCase = true): void => {
+    I.amOnPage(HOME_URL);
     I.waitForText('Sign in or create an account');
     I.fillField('username', username);
     I.fillField('password', password);
     I.click('Sign in');
-    I.waitForText('Apply for a divorce', 10);
+    I.waitForText('Apply for a divorce', LOGIN_TIMEOUT);
+    if (createCase) {
+      I.amOnPage(YOUR_DETAILS_URL);
+      I.click('My husband');
+      I.click('Continue');
+      I.waitForText('Has your marriage broken down irretrievably (it cannot be saved)?', LOGIN_TIMEOUT);
+      I.amOnPage(YOUR_DETAILS_URL);
+      I.waitForText('Apply for a divorce', LOGIN_TIMEOUT);
+    }
   },
   check: (I: CodeceptJS.I): void => {
     I.amOnPage(`${YOUR_DETAILS_URL}?lng=en`);
-    I.waitForText('Apply for a divorce');
+    I.waitForText('Apply for a divorce', LOGIN_TIMEOUT);
+  },
+  restore: (I: CodeceptJS.I, cookies: CodeceptJS.Cookie[]): void => {
+    I.amOnPage('/info');
+    I.setCookie(cookies);
+  },
+};
+
+export const autoLoginForApplicant2 = {
+  login: (I: CodeceptJS.I, username = TestUser, password = TestPass): void => {
+    I.amOnPage(APPLICANT_2);
+    I.waitForText('Sign in or create an account');
+    I.fillField('username', username);
+    I.fillField('password', password);
+    I.click('Sign in');
+    I.waitForText('Apply for a divorce', LOGIN_TIMEOUT);
+  },
+  check: (I: CodeceptJS.I): void => {
+    I.amOnPage(`${APPLICANT_2 + ENTER_YOUR_ACCESS_CODE}?lng=en`);
+    I.waitForText('Apply for a divorce', LOGIN_TIMEOUT);
   },
   restore: (I: CodeceptJS.I, cookies: CodeceptJS.Cookie[]): void => {
     I.amOnPage('/info');
@@ -45,7 +73,7 @@ export const autoLogin = {
 export const config = {
   TEST_URL: process.env.TEST_URL || 'http://localhost:3001',
   TestHeadlessBrowser: process.env.TEST_HEADLESS ? process.env.TEST_HEADLESS === 'true' : true,
-  WaitForTimeout: 10000,
+  WaitForTimeout: 30000,
   GetCurrentUser: (): { username: string; password: string } => ({
     username: idamUserManager.getCurrentUsername(),
     password: TestPass,
@@ -89,12 +117,26 @@ export const config = {
     users: {
       citizen: autoLogin,
       citizenSingleton: {
-        login: (I: CodeceptJS.I): void => {
+        login: async (I: CodeceptJS.I): Promise<void> => {
           const username = generateTestUsername();
-          idamUserManager.createUser(username, TestPass);
+          await idamUserManager.createUser(username, TestPass);
           autoLogin.login(I, username, TestPass);
         },
         check: autoLogin.check,
+        fetch: (): void => {
+          // don't fetch existing login
+        },
+        restore: (): void => {
+          // don't restore existing login
+        },
+      },
+      citizenApplicant2: {
+        login: async (I: CodeceptJS.I): Promise<void> => {
+          const username = generateTestUsername();
+          await idamUserManager.createUser(username, TestPass);
+          autoLoginForApplicant2.login(I, username, TestPass);
+        },
+        check: autoLoginForApplicant2.check,
         fetch: (): void => {
           // don't fetch existing login
         },
@@ -112,8 +154,10 @@ config.helpers = {
     show: !config.TestHeadlessBrowser,
     browser: 'chromium',
     waitForTimeout: config.WaitForTimeout,
-    waitForAction: 1000,
-    waitForNavigation: 'networkidle0',
+    waitForAction: 350,
+    timeout: config.WaitForTimeout,
+    retries: 5,
+    waitForNavigation: 'load',
     ignoreHTTPSErrors: true,
   },
 };

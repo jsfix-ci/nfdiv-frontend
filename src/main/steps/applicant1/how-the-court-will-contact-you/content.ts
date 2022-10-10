@@ -12,13 +12,13 @@ const en = ({ isDivorce, partner }: CommonContent) => ({
   byEmail: 'By email',
   byEmailLine1: `You have to agree to receive emails to use the online ${
     isDivorce ? 'divorce service' : 'service to end your civil partnership'
-  }. Your email address will not be shared with your ${partner}.`,
+  }. You can choose to keep your email address private from your ${partner} later in this application.`,
   byEmailLine2: 'Emails will be sent to:',
   applicantAgreeToReceiveEmails: `I agree that the ${
     isDivorce ? 'divorce service' : 'ending a civil partnership service'
   } can send me notifications and serve (deliver) court documents to me by email.`,
   byPhone: 'By phone',
-  byPhoneLine1: `Enter your phone number so court staff can contact you quickly, if they need to. Your phone number will not be shared with your ${partner}.`,
+  byPhoneLine1: `Enter your phone number so court staff can contact you quickly, if they need to. You can choose to keep your phone number private from your ${partner} later in this application.`,
   applicantPhoneNumber: 'Enter your phone number (optional)',
   errors: {
     applicant1AgreeToReceiveEmails: {
@@ -38,13 +38,14 @@ const cy: typeof en = ({ isDivorce, partner }: CommonContent) => ({
   byEmail: 'Trwy e-bost',
   byEmailLine1: `Rydych wedi cytuno i dderbyn negeseuon e-bost i ddefnyddio'r ${
     isDivorce ? 'gwasanaeth ysgaru ar-lein' : 'gwasanaeth ar-lein i ddiweddu eich partneriaeth sifil'
-  }. Ni fydd eich cyfeiriad e-bost yn cael ei rannu gyda'ch ${partner}.`,
+  }. Gallwch ddewis cadw eich cyfeiriad e-bost yn breifat oddi wrth eich ${partner} yn nes ymlaen yn ystod y cais hwn.`,
   byEmailLine2: 'Anfonir negeseuon e-bost i:',
   applicantAgreeToReceiveEmails: `Rwy'n cytuno y gall y ${
     isDivorce ? 'gwasanaeth ysgaru' : 'gwasanaeth diweddu partneriaeth sifil'
   } anfon hysbysiadau ataf a chyflwyno (danfon) dogfennau llys ataf drwy e-bost.`,
   byPhone: 'Dros y ffôn',
-  byPhoneLine1: `Nodwch eich rhif ffôn fel y gall staff y llys gysylltu â chi yn gyflym, os oes angen. Ni fydd eich rhif ffôn yn cael ei rannu gyda'ch ${partner}.`,
+  byPhoneLine1: `Nodwch eich rhif ffôn fel y gall staff y llys gysylltu â chi yn gyflym, os oes angen.
+   Gallwch ddewis cadw eich rhif ffôn yn breifat oddi wrth eich ${partner} yn nes ymlaen yn ystod y cais hwn.`,
   applicantPhoneNumber: 'Nodwch eich rhif ffôn (dewisol)',
   errors: {
     applicant1AgreeToReceiveEmails: {
@@ -77,6 +78,9 @@ export const form: FormContent = {
     applicant1PhoneNumber: {
       type: 'tel',
       label: l => l.byPhone,
+      labelAttributes: {
+        for: '',
+      },
       hint: l =>
         `<p class="govuk-body">${l.byPhoneLine1}</p>
         <label class="govuk-label govuk-!-font-weight-bold" for="applicant1PhoneNumber">${l.applicantPhoneNumber}</label>`,

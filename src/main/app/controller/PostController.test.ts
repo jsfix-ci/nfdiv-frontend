@@ -10,7 +10,6 @@ import {
   CITIZEN_SAVE_AND_CLOSE,
   CITIZEN_UPDATE,
   Gender,
-  UPDATE_AOS,
 } from '../case/definition';
 import { isPhoneNoValid } from '../form/validation';
 
@@ -31,6 +30,12 @@ describe('PostController', () => {
         type: 'checkboxes',
         values: [{ name: 'sameSex', value: Checkbox.Checked }],
       },
+      gender: {},
+      applicant1StatementOfTruth: {},
+      applicant1IConfirmPrayer: {},
+      day: {},
+      month: {},
+      year: {},
     },
   } as unknown as FormContent;
 
@@ -59,7 +64,7 @@ describe('PostController', () => {
 
     expect(req.locals.api.triggerEvent).not.toHaveBeenCalled();
     expect(getNextStepUrlMock).not.toHaveBeenCalled();
-    expect(res.redirect).toBeCalledWith(req.path);
+    expect(res.redirect).toHaveBeenCalledWith(req.path);
     expect(req.session.errors).toEqual(errors);
   });
 
@@ -84,14 +89,14 @@ describe('PostController', () => {
     expect(req.session.userCase).toEqual(expectedUserCase);
     expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', { ...body }, CITIZEN_UPDATE);
 
-    expect(getNextStepUrlMock).toBeCalledWith(req, expectedUserCase);
-    expect(res.redirect).toBeCalledWith('/next-step-url');
+    expect(getNextStepUrlMock).toHaveBeenCalledWith(req, expectedUserCase);
+    expect(res.redirect).toHaveBeenCalledWith('/next-step-url');
     expect(req.session.errors).toStrictEqual([]);
   });
 
   test('Saves the users prayer and statement of truth', async () => {
     getNextStepUrlMock.mockReturnValue('/next-step-url');
-    const body = { applicant1IConfirmPrayer: Checkbox.Checked, applicant1IBelieveApplicationIsTrue: Checkbox.Checked };
+    const body = { applicant1IConfirmPrayer: Checkbox.Checked, applicant1StatementOfTruth: Checkbox.Checked };
 
     const controller = new PostController(mockFormContent.fields);
 
@@ -120,8 +125,8 @@ describe('PostController', () => {
     expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', { gender: 'female' }, CITIZEN_UPDATE);
 
     expect(getNextStepUrlMock).not.toHaveBeenCalled();
-    expect(res.redirect).toBeCalledWith('/request');
-    expect(logger.error).toBeCalledWith('Error saving', 'Error saving');
+    expect(res.redirect).toHaveBeenCalledWith('/request');
+    expect(logger.error).toHaveBeenCalledWith('Error saving', 'Error saving');
     expect(req.session.errors).toEqual([
       {
         errorType: 'errorSaving',
@@ -146,7 +151,7 @@ describe('PostController', () => {
       ...body,
     };
     expect(mockSave).toHaveBeenCalled();
-    expect(getNextStepUrlMock).toBeCalledWith(req, userCase);
+    expect(getNextStepUrlMock).toHaveBeenCalledWith(req, userCase);
     expect(res.redirect).not.toHaveBeenCalled();
     expect(req.session.errors).toStrictEqual([]);
   });
@@ -188,8 +193,8 @@ describe('PostController', () => {
       CITIZEN_UPDATE
     );
 
-    expect(getNextStepUrlMock).toBeCalledWith(req, expectedUserCase);
-    expect(res.redirect).toBeCalledWith('/next-step-url');
+    expect(getNextStepUrlMock).toHaveBeenCalledWith(req, expectedUserCase);
+    expect(res.redirect).toHaveBeenCalledWith('/next-step-url');
     expect(req.session.errors).toStrictEqual([]);
   });
 
@@ -201,26 +206,32 @@ describe('PostController', () => {
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', { gender: 'female' }, CITIZEN_UPDATE);
+    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', { gender: 'female' }, CITIZEN_SAVE_AND_CLOSE);
 
-    expect(res.end).toBeCalled();
+    expect(res.redirect).toHaveBeenCalledWith(SAVE_AND_SIGN_OUT);
   });
 
-  it('saves and signs out even if there are errors', async () => {
-    const body = { gender: Gender.FEMALE, saveAndSignOut: true };
-    const controller = new PostController(mockFormContent.fields);
+  it('saves and signs out with empty form data if there are errors', async () => {
+    const errors = [{ propertyName: 'applicant1PhoneNumber', errorType: 'invalid' }];
+    const body = { applicant1PhoneNumber: 'invalid phone number', saveAndSignOut: true };
+    const mockPhoneNumberFormContent = {
+      fields: {
+        applicant1PhoneNumber: {
+          type: 'tel',
+          validator: isPhoneNoValid,
+        },
+      },
+    } as unknown as FormContent;
+    const controller = new PostController(mockPhoneNumberFormContent.fields);
 
-    const req = mockRequest({ body, session: { user: { email: 'test@example.com' } } });
+    const req = mockRequest({ body });
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith(
-      '1234',
-      { gender: 'female', sameSex: null },
-      CITIZEN_SAVE_AND_CLOSE
-    );
+    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', {}, CITIZEN_SAVE_AND_CLOSE);
 
     expect(res.redirect).toHaveBeenCalledWith(SAVE_AND_SIGN_OUT);
+    expect(req.session.errors).toEqual(errors);
   });
 
   it('saves and signs out even if was an error saving data', async () => {
@@ -256,7 +267,7 @@ describe('PostController', () => {
     expect(res.redirect).toHaveBeenCalledWith('/next-step-url');
   });
 
-  test('triggers citizen-draft-aos event if user is respondent', async () => {
+  test('triggers citizen-applicant2-update-application event if user is respondent', async () => {
     getNextStepUrlMock.mockReturnValue('/next-step-url');
     const body = { gender: Gender.FEMALE };
     const controller = new PostController(mockFormContent.fields);
@@ -267,7 +278,7 @@ describe('PostController', () => {
     const res = mockResponse();
     await controller.post(req, res);
 
-    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', { gender: 'female' }, UPDATE_AOS);
+    expect(req.locals.api.triggerEvent).toHaveBeenCalledWith('1234', { gender: 'female' }, CITIZEN_APPLICANT2_UPDATE);
 
     expect(res.redirect).toHaveBeenCalledWith('/next-step-url');
   });

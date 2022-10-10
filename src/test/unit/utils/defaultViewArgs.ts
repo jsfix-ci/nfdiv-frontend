@@ -1,12 +1,16 @@
+import { SupportedLanguages } from '../../../main/modules/i18n';
 import { generatePageContent } from '../../../main/steps/common/common.content';
 
 export const defaultViewArgs = {
-  ...generatePageContent({ language: 'en', userEmail: 'test@example.com', userCase: expect.any(Object) }),
+  ...generatePageContent({
+    language: SupportedLanguages.En,
+    userEmail: 'test@example.com',
+    userCase: expect.any(Object),
+  }),
   serviceName: expect.any(String),
   sessionErrors: expect.any(Array),
   getNextIncompleteStepUrl: expect.any(Function),
-  isDraft: expect.any(Boolean),
-  isAwaitingApplicant2Response: expect.any(Boolean),
+  isAmendableStates: expect.any(Boolean),
   isDivorce: expect.any(Boolean),
   isApplicant2: expect.any(Boolean),
   partner: expect.any(String),
@@ -14,5 +18,6 @@ export const defaultViewArgs = {
   language: expect.any(String),
   htmlLang: expect.any(String),
   userEmail: expect.any(String),
-  contactEmail: expect.any(String),
+  existingCaseId: expect.any(String),
+  pageUrl: expect.any(String),
 };

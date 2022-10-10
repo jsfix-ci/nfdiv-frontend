@@ -1,15 +1,21 @@
 import { AnyObject } from '../controller/PostController';
 
 import {
+  AlternativeServiceOutcome,
+  Applicant2Represented,
   ApplicationType,
   CaseData,
   ChangedNameHow,
+  ClarificationReason,
+  ConditionalOrderCourt,
   DateAsString,
   DivorceDocument,
   DivorceOrDissolution,
   DocumentType,
+  FinancialOrderFor,
   Gender,
   JurisdictionConnections,
+  LegalAdvisorDecision,
   ListValue,
   OrderSummary,
   Payment,
@@ -42,8 +48,9 @@ export const formFieldsToCaseMapping: Partial<Record<keyof Case, keyof CaseData>
   bothLastHabituallyResident: 'jurisdictionBothLastHabituallyResident',
   applicant1LivingInEnglandWalesTwelveMonths: 'jurisdictionApp1HabituallyResLastTwelveMonths',
   applicant1LivingInEnglandWalesSixMonths: 'jurisdictionApp1HabituallyResLastSixMonths',
-  applicant1PhoneNumber: 'applicant1PhoneNumber',
   connections: 'jurisdictionConnections',
+  jurisdictionResidualEligible: 'jurisdictionResidualEligible',
+  applicant1PhoneNumber: 'applicant1PhoneNumber',
   applicant1FirstNames: 'applicant1FirstName',
   applicant1MiddleNames: 'applicant1MiddleName',
   applicant1LastNames: 'applicant1LastName',
@@ -62,6 +69,8 @@ export const formFieldsToCaseMapping: Partial<Record<keyof Case, keyof CaseData>
   applicant1ChangedNameHowAnotherWay: 'applicant1NameChangedHowOtherDetails',
   applicant2NameChangedHow: 'applicant2NameChangedHow',
   applicant2ChangedNameHowAnotherWay: 'applicant2NameChangedHowOtherDetails',
+  applicant1Email: 'applicant1Email',
+  applicant2Email: 'applicant2Email',
   applicant2EmailAddress: 'applicant2InviteEmailAddress',
   applicant2PhoneNumber: 'applicant2PhoneNumber',
   applicant1KnowsApplicant2Address: 'applicant1KnowsApplicant2Address',
@@ -69,29 +78,71 @@ export const formFieldsToCaseMapping: Partial<Record<keyof Case, keyof CaseData>
   applicant1LegalProceedingsDetails: 'applicant1LegalProceedingsDetails',
   applicant2LegalProceedings: 'applicant2LegalProceedings',
   applicant2LegalProceedingsDetails: 'applicant2LegalProceedingsDetails',
-  applyForFinancialOrder: 'applicant1FinancialOrder',
+  applicant1ApplyForFinancialOrder: 'applicant1FinancialOrder',
+  applicant1WhoIsFinancialOrderFor: 'applicant1FinancialOrdersFor',
   applicant2ApplyForFinancialOrder: 'applicant2FinancialOrder',
+  applicant2WhoIsFinancialOrderFor: 'applicant2FinancialOrdersFor',
   applicant1DocumentsUploaded: 'applicant1DocumentsUploaded',
   applicant2DocumentsUploaded: 'applicant2DocumentsUploaded',
   documentsGenerated: 'documentsGenerated',
+  documentsUploaded: 'documentsUploaded',
   respondentUserId: 'applicant2UserId',
   applicant2Confirmation: 'applicant2ConfirmApplicant1Information',
   applicant2Explanation: 'applicant2ExplainsApplicant1IncorrectInformation',
   applicant1PcqId: 'applicant1PcqId',
   issueDate: 'issueDate',
   applicant1SolicitorAddress: 'applicant1SolicitorAddress',
-  applicant2SolicitorAddress: 'applicant2SolicitorAddress',
   accessCode: 'accessCode',
   applicationFeeOrderSummary: 'applicationFeeOrderSummary',
   payments: 'applicationPayments',
-  disputeApplication: 'disputeApplication',
   confirmDisputeApplication: 'confirmDisputeApplication',
   jurisdictionAgree: 'jurisdictionAgree',
   reasonCourtsOfEnglandAndWalesHaveNoJurisdiction: 'reasonCourtsOfEnglandAndWalesHaveNoJurisdiction',
   inWhichCountryIsYourLifeMainlyBased: 'inWhichCountryIsYourLifeMainlyBased',
+  alternativeServiceOutcomes: 'alternativeServiceOutcomes',
+  applicant1ApplyForConditionalOrderStarted: 'coApplicant1ApplyForConditionalOrderStarted',
+  applicant2ApplyForConditionalOrderStarted: 'coApplicant2ApplyForConditionalOrderStarted',
+  applicant1ApplyForConditionalOrder: 'coApplicant1ApplyForConditionalOrder',
+  applicant2ApplyForConditionalOrder: 'coApplicant2ApplyForConditionalOrder',
+  applicant1ConfirmInformationStillCorrect: 'coApplicant1ConfirmInformationStillCorrect',
+  applicant1ReasonInformationNotCorrect: 'coApplicant1ReasonInformationNotCorrect',
+  applicant2ConfirmInformationStillCorrect: 'coApplicant2ConfirmInformationStillCorrect',
+  applicant2ReasonInformationNotCorrect: 'coApplicant2ReasonInformationNotCorrect',
+  coCourt: 'coCourt',
+  coCertificateOfEntitlementDocument: 'coCertificateOfEntitlementDocument',
+  coConditionalOrderGrantedDocument: 'coConditionalOrderGrantedDocument',
+  coDateAndTimeOfHearing: 'coDateAndTimeOfHearing',
+  coDecisionDate: 'coDecisionDate',
+  applicant1IsApplicant2Represented: 'applicant1IsApplicant2Represented',
+  coRefusalClarificationReason: 'coRefusalClarificationReason',
+  coRefusalClarificationAdditionalInfo: 'coRefusalClarificationAdditionalInfo',
+  coClarificationUploadDocuments: 'coClarificationUploadDocuments',
+  coLegalAdvisorDecisions: 'coLegalAdvisorDecisions',
+  dateFinalOrderEligibleToRespondent: 'dateFinalOrderEligibleToRespondent',
+  dateFinalOrderNoLongerEligible: 'dateFinalOrderNoLongerEligible',
+  applicant2SolicitorName: 'applicant2SolicitorName',
+  applicant2SolicitorEmail: 'applicant2SolicitorEmail',
+  applicant2SolicitorFirmName: 'applicant2SolicitorFirmName',
+  applicant1FinalOrderLateExplanation: 'applicant1FinalOrderLateExplanation',
+  applicant2FinalOrderExplanation: 'applicant2FinalOrderExplanation',
+  applicant1CannotUpload: 'applicant1CannotUpload',
+  applicant2CannotUpload: 'applicant2CannotUpload',
+  applicant2SolicitorRepresented: 'applicant2SolicitorRepresented',
+  applicant1UsedWelshTranslationOnSubmission: 'applicant1UsedWelshTranslationOnSubmission',
+  applicant2UsedWelshTranslationOnSubmission: 'applicant2UsedWelshTranslationOnSubmission',
+  coRefusalRejectionAdditionalInfo: 'coRefusalRejectionAdditionalInfo',
+  dueDate: 'dueDate',
+  dateSubmitted: 'dateSubmitted',
+  dateAosSubmitted: 'dateAosSubmitted',
+  dateFinalOrderSubmitted: 'dateFinalOrderSubmitted',
+  coApplicant1SubmittedDate: 'coApplicant1SubmittedDate',
+  coApplicant2SubmittedDate: 'coApplicant2SubmittedDate',
+  dateFinalOrderEligibleFrom: 'dateFinalOrderEligibleFrom',
+  applicant1AppliedForFinalOrderFirst: 'applicant1AppliedForFinalOrderFirst',
+  applicant2AppliedForFinalOrderFirst: 'applicant2AppliedForFinalOrderFirst',
 };
 
-export function formatCase<InputFormat, OutputFormat>(fields: FieldFormats, data: InputFormat): OutputFormat {
+export function formatCase<OutputFormat>(fields: FieldFormats, data: Partial<Case> | CaseData): OutputFormat {
   const result = {};
 
   for (const field of Object.keys(data)) {
@@ -139,7 +190,7 @@ export interface Case {
   bothLastHabituallyResident?: YesOrNo;
   applicant1LivingInEnglandWalesTwelveMonths?: YesOrNo;
   applicant1LivingInEnglandWalesSixMonths?: YesOrNo;
-  jurisdictionResidualEligible?: Checkbox;
+  jurisdictionResidualEligible?: YesOrNo;
   applicant1EnglishOrWelsh?: LanguagePreference;
   applicant2EnglishOrWelsh?: LanguagePreference;
   applicant1FirstNames?: string;
@@ -158,6 +209,8 @@ export interface Case {
   applicant2PhoneNumber?: string;
   applicant2AgreeToReceiveEmails?: Checkbox;
   applicant2ConfirmReceipt: YesOrNo;
+  applicant1ApplyForConditionalOrderStarted: YesOrNo;
+  applicant2ApplyForConditionalOrderStarted: YesOrNo;
   connections: JurisdictionConnections[];
   applicant1FullNameOnCertificate?: string;
   applicant2FullNameOnCertificate?: string;
@@ -181,6 +234,8 @@ export interface Case {
   applicant2NameChangedHow?: ChangedNameHow[];
   applicant1ChangedNameHowAnotherWay?: string;
   applicant2ChangedNameHowAnotherWay?: string;
+  applicant1Email?: string;
+  applicant2Email?: string;
   applicant2EmailAddress?: string;
   applicant1DoesNotKnowApplicant2EmailAddress?: Checkbox;
   applicant1KnowsApplicant2Address?: YesOrNo;
@@ -189,11 +244,14 @@ export interface Case {
   applicant1LegalProceedingsDetails?: string;
   applicant2LegalProceedings?: YesOrNo;
   applicant2LegalProceedingsDetails?: string;
-  applyForFinancialOrder?: YesOrNo;
+  applicant1ApplyForFinancialOrder?: YesOrNo;
+  applicant1WhoIsFinancialOrderFor?: FinancialOrderFor[];
   applicant2ApplyForFinancialOrder?: YesOrNo;
+  applicant2WhoIsFinancialOrderFor?: FinancialOrderFor[];
   applicant1UploadedFiles?: UploadedFile[];
   applicant2UploadedFiles?: UploadedFile[];
   documentsGenerated: ListValue<DivorceDocument>[];
+  documentsUploaded: ListValue<DivorceDocument>[];
   applicant1DocumentsUploaded?: ListValue<Partial<DivorceDocument> | null>[];
   applicant2DocumentsUploaded?: ListValue<Partial<DivorceDocument> | null>[];
   applicant1CannotUpload?: Checkbox;
@@ -204,11 +262,11 @@ export interface Case {
   dueDate?: DateAsString;
   applicant1IConfirmPrayer?: Checkbox;
   applicant2IConfirmPrayer?: Checkbox;
-  applicant1IBelieveApplicationIsTrue?: Checkbox;
-  applicant2IBelieveApplicationIsTrue?: Checkbox;
+  applicant1StatementOfTruth?: Checkbox;
+  applicant2StatementOfTruth?: Checkbox;
   caseReference?: string;
   respondentUserId?: string;
-  dateSubmitted?: Date;
+  dateSubmitted?: DateAsString;
   payments: ListValue<Payment>[];
   applicationFeeOrderSummary: OrderSummary;
   applicant2Confirmation: YesOrNo;
@@ -220,6 +278,61 @@ export interface Case {
   jurisdictionAgree?: YesOrNo;
   reasonCourtsOfEnglandAndWalesHaveNoJurisdiction?: string;
   inWhichCountryIsYourLifeMainlyBased?: string;
+  alternativeServiceOutcomes: ListValue<AlternativeServiceOutcome>[];
+  applicant1ApplyForConditionalOrder?: YesOrNo;
+  applicant2ApplyForConditionalOrder?: YesOrNo;
+  applicant1ConfirmInformationStillCorrect?: YesOrNo;
+  applicant1ReasonInformationNotCorrect?: string;
+  applicant2ConfirmInformationStillCorrect?: YesOrNo;
+  applicant2ReasonInformationNotCorrect?: string;
+  coApplicant1StatementOfTruth?: Checkbox;
+  coApplicant2StatementOfTruth?: Checkbox;
+  coCourt: ConditionalOrderCourt;
+  dateFinalOrderEligibleFrom: DateAsString;
+  coCertificateOfEntitlementDocument: DivorceDocument;
+  coConditionalOrderGrantedDocument: DivorceDocument;
+  coApplicant1SubmittedDate?: DateAsString;
+  coApplicant2SubmittedDate?: DateAsString;
+  coRefusalRejectionAdditionalInfo?: string;
+  coDateAndTimeOfHearing: DateAsString;
+  coDecisionDate: DateAsString;
+  applicant1IsApplicant2Represented: Applicant2Represented;
+  coRefusalClarificationReason?: ClarificationReason[];
+  coRefusalClarificationAdditionalInfo?: string;
+  dateFinalOrderEligibleToRespondent?: DateAsString;
+  coClarificationResponses?: string;
+  coCannotUploadClarificationDocuments?: Checkbox;
+  coClarificationUploadDocuments?: ListValue<Partial<DivorceDocument> | null>[];
+  coClarificationUploadedFiles?: UploadedFile[];
+  coLegalAdvisorDecisions?: ListValue<LegalAdvisorDecision>[];
+  doesApplicant1WantToApplyForFinalOrder?: Checkbox;
+  doesApplicant2WantToApplyForFinalOrder?: Checkbox;
+  applicant2FinalOrderExplanation?: string;
+  dateFinalOrderNoLongerEligible?: DateAsString;
+  applicant2SolicitorName: string;
+  applicant2SolicitorEmail: string;
+  applicant2SolicitorFirmName: string;
+  applicant2SolicitorAddress1?: string;
+  applicant2SolicitorAddress2?: string;
+  applicant2SolicitorAddress3?: string;
+  applicant2SolicitorAddressTown?: string;
+  applicant2SolicitorAddressCounty?: string;
+  applicant2SolicitorAddressPostcode?: string;
+  applicant2SolicitorAddressCountry?: string;
+  applicant1FinalOrderLateExplanation?: string;
+  applicant1FinalOrderStatementOfTruth?: Checkbox;
+  applicant2SolicitorRepresented: YesOrNo;
+  applicant1SolicitorRepresented: YesOrNo;
+  dateFinalOrderSubmitted?: DateAsString;
+  dateAosSubmitted?: DateAsString;
+  aosStatementOfTruth: Checkbox;
+  previousState: State;
+  applicant1UsedWelshTranslationOnSubmission?: YesOrNo;
+  applicant2UsedWelshTranslationOnSubmission?: YesOrNo;
+  applicant2Offline: YesOrNo;
+  applicant1AppliedForFinalOrderFirst: YesOrNo;
+  applicant2AppliedForFinalOrderFirst: YesOrNo;
+  switchedToSoleCo: YesOrNo;
 }
 
 export interface CaseWithId extends Case {

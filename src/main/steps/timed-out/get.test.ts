@@ -1,6 +1,7 @@
 import { defaultViewArgs } from '../../../test/unit/utils/defaultViewArgs';
 import { mockRequest } from '../../../test/unit/utils/mockRequest';
 import { mockResponse } from '../../../test/unit/utils/mockResponse';
+import { SupportedLanguages } from '../../modules/i18n';
 import { generatePageContent } from '../common/common.content';
 
 import { generateContent } from './content';
@@ -13,12 +14,12 @@ describe('TimedOutGetController', () => {
     const req = mockRequest();
     const res = mockResponse();
     await controller.get(req, res);
-    const language = 'en';
+    const language = SupportedLanguages.En;
     const isDivorce = true;
     const userCase = req.session.userCase;
 
-    expect(req.session.destroy).toBeCalled();
-    expect(res.render).toBeCalledWith(expect.anything(), {
+    expect(req.session.destroy).toHaveBeenCalled();
+    expect(res.render).toHaveBeenCalledWith(expect.anything(), {
       ...generatePageContent({
         language,
         pageContent: generateContent,

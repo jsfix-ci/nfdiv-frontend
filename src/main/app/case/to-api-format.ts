@@ -1,7 +1,23 @@
 import { isInvalidHelpWithFeesRef } from '../form/validation';
 
 import { Case, CaseDate, Checkbox, LanguagePreference, formFieldsToCaseMapping, formatCase } from './case';
-import { CaseData, ChangedNameHow, DivorceOrDissolution, Gender, ThePrayer, YesOrNo } from './definition';
+import {
+  Applicant2Represented,
+  ApplicationType,
+  CaseData,
+  ChangedNameHow,
+  ContactDetailsType,
+  DissolveDivorce,
+  DivorceOrDissolution,
+  EndCivilPartnership,
+  FinancialOrderFor,
+  FinancialOrdersChild,
+  FinancialOrdersThemselves,
+  Gender,
+  HowToRespondApplication,
+  MarriageFormation,
+  YesOrNo,
+} from './definition';
 import { applicant1AddressToApi, applicant2AddressToApi } from './formatter/address';
 
 export type OrNull<T> = { [K in keyof T]: T[K] | null };
@@ -16,10 +32,36 @@ const checkboxConverter = (value: string | undefined) => {
   return value === Checkbox.Checked ? YesOrNo.YES : YesOrNo.NO;
 };
 
+const prayerConverter = (applicant: 'applicant1' | 'applicant2') => {
+  return data => {
+    const isDivorce = data.divorceOrDissolution === DivorceOrDissolution.DIVORCE;
+    const confirmPrayer = data[`${applicant}IConfirmPrayer`];
+    const orderFor = data[`${applicant}WhoIsFinancialOrderFor`];
+    const dissolveDivorce = confirmPrayer && isDivorce ? [DissolveDivorce.DISSOLVE_DIVORCE] : [];
+    const endCivil = confirmPrayer && !isDivorce ? [EndCivilPartnership.END_CIVIL_PARTNERSHIP] : [];
+    const orderForThemselves =
+      confirmPrayer && orderFor?.includes(FinancialOrderFor.APPLICANT)
+        ? [FinancialOrdersThemselves.FINANCIAL_ORDERS_THEMSELVES]
+        : [];
+    const orderForChild =
+      confirmPrayer && orderFor?.includes(FinancialOrderFor.CHILDREN)
+        ? [FinancialOrdersChild.FINANCIAL_ORDERS_CHILD]
+        : [];
+
+    return {
+      [`${applicant}PrayerDissolveDivorce`]: dissolveDivorce,
+      [`${applicant}PrayerEndCivilPartnership`]: endCivil,
+      [`${applicant}PrayerFinancialOrdersThemselves`]: orderForThemselves,
+      [`${applicant}PrayerFinancialOrdersChild`]: orderForChild,
+    };
+  };
+};
+
 const fields: ToApiConverters = {
   ...formFieldsToCaseMapping,
-  sameSex: data => ({
-    marriageIsSameSexCouple: checkboxConverter(data.sameSex),
+  sameSex: ({ sameSex }) => ({
+    marriageFormationType:
+      sameSex === Checkbox.Checked ? MarriageFormation.SAME_SEX_COUPLE : MarriageFormation.OPPOSITE_SEX_COUPLE,
   }),
   gender: data => {
     // Applicant 1 makes the request
@@ -40,11 +82,30 @@ const fields: ToApiConverters = {
 
     return { applicant1Gender, applicant2Gender };
   },
+  applicationType: data => ({
+    applicationType: data.applicationType,
+    ...(data.applicationType === ApplicationType.JOINT_APPLICATION
+      ? setUnreachableAnswersToNull([
+          'applicant1IsApplicant2Represented',
+          'applicant2SolicitorRepresented',
+          'applicant2SolicitorName',
+          'applicant2SolicitorEmail',
+          'applicant2SolicitorFirmName',
+          'applicant2SolicitorAddress',
+        ])
+      : {}),
+  }),
   relationshipDate: data => ({
     marriageDate: toApiDate(data.relationshipDate),
   }),
-  jurisdictionResidualEligible: data => ({
-    jurisdictionResidualEligible: checkboxConverter(data.jurisdictionResidualEligible),
+  doesApplicant1WantToApplyForFinalOrder: data => ({
+    doesApplicant1WantToApplyForFinalOrder: checkboxConverter(data.doesApplicant1WantToApplyForFinalOrder),
+  }),
+  doesApplicant2WantToApplyForFinalOrder: data => ({
+    doesApplicant2WantToApplyForFinalOrder: checkboxConverter(data.doesApplicant2WantToApplyForFinalOrder),
+  }),
+  applicant1FinalOrderStatementOfTruth: data => ({
+    applicant1FinalOrderStatementOfTruth: checkboxConverter(data.applicant1FinalOrderStatementOfTruth),
   }),
   applicant1HelpWithFeesRefNo: data => ({
     applicant1HWFReferenceNumber: !isInvalidHelpWithFeesRef(data.applicant1HelpWithFeesRefNo)
@@ -69,11 +130,13 @@ const fields: ToApiConverters = {
   applicant2AgreeToReceiveEmails: data => ({
     applicant2AgreedToReceiveEmails: checkboxConverter(data.applicant2AgreeToReceiveEmails),
   }),
-  applicant1AddressPrivate: data => ({
-    applicant1KeepContactDetailsConfidential: data.applicant1AddressPrivate,
+  applicant1AddressPrivate: ({ applicant1AddressPrivate }) => ({
+    applicant1ContactDetailsType:
+      applicant1AddressPrivate === YesOrNo.YES ? ContactDetailsType.PRIVATE : ContactDetailsType.PUBLIC,
   }),
-  applicant2AddressPrivate: data => ({
-    applicant2KeepContactDetailsConfidential: data.applicant2AddressPrivate,
+  applicant2AddressPrivate: ({ applicant2AddressPrivate }) => ({
+    applicant2ContactDetailsType:
+      applicant2AddressPrivate === YesOrNo.YES ? ContactDetailsType.PRIVATE : ContactDetailsType.PUBLIC,
   }),
   applicant2AddressPostcode: applicant2AddressToApi,
   applicant1DoesNotKnowApplicant2EmailAddress: data => ({
@@ -99,6 +162,7 @@ const fields: ToApiConverters = {
         ? [data.applicant1CannotUploadDocuments]
         : data.applicant1CannotUploadDocuments
       : [],
+    applicant1CannotUpload: data.applicant1CannotUploadDocuments?.length ? YesOrNo.YES : YesOrNo.NO,
   }),
   applicant2CannotUploadDocuments: data => ({
     applicant2CannotUploadSupportingDocument: data.applicant2CannotUploadDocuments
@@ -106,20 +170,21 @@ const fields: ToApiConverters = {
         ? [data.applicant2CannotUploadDocuments]
         : data.applicant2CannotUploadDocuments
       : [],
+    applicant2CannotUpload: data.applicant2CannotUploadDocuments?.length ? YesOrNo.YES : YesOrNo.NO,
   }),
-  applicant1IConfirmPrayer: data => ({
-    applicant1PrayerHasBeenGivenCheckbox: data.applicant1IConfirmPrayer ? [ThePrayer.I_CONFIRM] : [],
+  applicant1IConfirmPrayer: prayerConverter('applicant1'),
+  applicant2IConfirmPrayer: prayerConverter('applicant2'),
+  applicant1StatementOfTruth: data => ({
+    applicant1StatementOfTruth: checkboxConverter(data.applicant1StatementOfTruth),
   }),
-  applicant2IConfirmPrayer: data => ({
-    applicant2PrayerHasBeenGiven: checkboxConverter(data.applicant2IConfirmPrayer),
+  applicant2StatementOfTruth: data => ({
+    applicant2StatementOfTruth: checkboxConverter(data.applicant2StatementOfTruth),
   }),
-  applicant1IBelieveApplicationIsTrue: data => ({
-    applicant1StatementOfTruth: checkboxConverter(data.applicant1IBelieveApplicationIsTrue),
-  }),
-  applicant2IBelieveApplicationIsTrue: data => ({
-    applicant2StatementOfTruth: checkboxConverter(data.applicant2IBelieveApplicationIsTrue),
+  aosStatementOfTruth: data => ({
+    statementOfTruth: checkboxConverter(data.aosStatementOfTruth),
   }),
   applicant1UploadedFiles: () => ({}),
+  coClarificationUploadedFiles: () => ({}),
   applicant2UploadedFiles: () => ({}),
   confirmReadPetition: data => ({
     confirmReadPetition: checkboxConverter(data.confirmReadPetition),
@@ -148,6 +213,17 @@ const fields: ToApiConverters = {
     applicant2HWFNeedHelp: data.applicant2HelpPayingNeeded,
     ...(data.applicant2HelpPayingNeeded === YesOrNo.NO
       ? setUnreachableAnswersToNull(['applicant2HWFAppliedForFees', 'applicant2HWFReferenceNumber'])
+      : {}),
+  }),
+  applicant1IsApplicant2Represented: data => ({
+    applicant1IsApplicant2Represented: data.applicant1IsApplicant2Represented,
+    ...(data.applicant1IsApplicant2Represented !== Applicant2Represented.YES
+      ? setUnreachableAnswersToNull([
+          'applicant2SolicitorName',
+          'applicant2SolicitorEmail',
+          'applicant2SolicitorFirmName',
+          'applicant2SolicitorAddress',
+        ])
       : {}),
   }),
   applicant1KnowsApplicant2Address: data => ({
@@ -179,19 +255,63 @@ const fields: ToApiConverters = {
   }),
   certificateInEnglish: data => ({
     marriageCertificateInEnglish: data.certificateInEnglish,
-    ...(data.certificateInEnglish === YesOrNo.NO ? setUnreachableAnswersToNull(['marriageCertifiedTranslation']) : {}),
+    ...(data.certificateInEnglish !== YesOrNo.NO ? setUnreachableAnswersToNull(['marriageCertifiedTranslation']) : {}),
   }),
   applicant1LegalProceedings: data => ({
     applicant1LegalProceedings: data.applicant1LegalProceedings,
-    ...(data.applicant1LegalProceedings === YesOrNo.YES
+    ...(data.applicant1LegalProceedings !== YesOrNo.YES
       ? setUnreachableAnswersToNull(['applicant1LegalProceedingsDetails'])
       : {}),
   }),
   applicant2LegalProceedings: data => ({
     applicant2LegalProceedings: data.applicant2LegalProceedings,
-    ...(data.applicant2LegalProceedings === YesOrNo.YES
+    ...(data.applicant2LegalProceedings !== YesOrNo.YES
       ? setUnreachableAnswersToNull(['applicant2LegalProceedingsDetails'])
       : {}),
+  }),
+  disputeApplication: ({ disputeApplication }) => ({
+    howToRespondApplication:
+      disputeApplication === YesOrNo.YES
+        ? HowToRespondApplication.DISPUTE_DIVORCE
+        : HowToRespondApplication.WITHOUT_DISPUTE_DIVORCE,
+  }),
+  coApplicant1StatementOfTruth: data => ({
+    coApplicant1StatementOfTruth: checkboxConverter(data.coApplicant1StatementOfTruth),
+  }),
+  coApplicant2StatementOfTruth: data => ({
+    coApplicant2StatementOfTruth: checkboxConverter(data.coApplicant2StatementOfTruth),
+  }),
+  applicant1WhoIsFinancialOrderFor: data => ({
+    applicant1FinancialOrdersFor:
+      data.applicant1ApplyForFinancialOrder === YesOrNo.YES ? data.applicant1WhoIsFinancialOrderFor : [],
+  }),
+  applicant2WhoIsFinancialOrderFor: data => ({
+    applicant2FinancialOrdersFor:
+      data.applicant2ApplyForFinancialOrder === YesOrNo.YES ? data.applicant2WhoIsFinancialOrderFor : [],
+  }),
+  coCannotUploadClarificationDocuments: data => ({
+    coCannotUploadClarificationDocuments: checkboxConverter(data.coCannotUploadClarificationDocuments),
+  }),
+  coClarificationResponses: data => ({
+    coClarificationResponses: data.coClarificationResponses
+      ? [
+          {
+            id: '1',
+            value: data.coClarificationResponses,
+          },
+        ]
+      : [],
+  }),
+  applicant2SolicitorAddress1: data => ({
+    applicant2SolicitorAddress: addressConverter([
+      data.applicant2SolicitorAddress1,
+      data.applicant2SolicitorAddress2,
+      data.applicant2SolicitorAddress3,
+      data.applicant2SolicitorAddressTown,
+      data.applicant2SolicitorAddressCounty,
+      data.applicant2SolicitorAddressPostcode,
+      data.applicant2SolicitorAddressCountry,
+    ]),
   }),
 };
 
@@ -208,6 +328,8 @@ const languagePreferenceYesNoOrNull = (value: LanguagePreference | undefined) =>
   }
   return value === LanguagePreference.Welsh ? YesOrNo.YES : YesOrNo.NO;
 };
+
+const addressConverter = (address: (string | undefined)[]) => (address.some(Boolean) ? address.join('\n') : '');
 
 const setUnreachableAnswersToNull = (properties: string[]): Record<string, null> =>
   properties.reduce((arr: Record<string, null>, property: string) => ({ ...arr, [property]: null }), {});
